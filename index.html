@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>alex heinemann - Tap Effect</title>
+    <title>alex heinemann - Interactive</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #2c2c2c; /* Hintergrundfarbe */
+            background-color: #2c2c2c;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             font-family: 'Playfair Display', serif;
             overflow: hidden;
-            color: #a6845d; /* Akzentfarbe */
+            color: #a6845d;
         }
 
         .container {
@@ -24,7 +24,7 @@
             position: relative;
             width: 100%;
             max-width: 400px;
-            cursor: pointer; /* Zeigt an, dass die Grafik klickbar ist */
+            z-index: 10;
         }
 
         h1 {
@@ -34,21 +34,15 @@
             letter-spacing: -1px;
             margin-bottom: 60px;
             text-transform: lowercase;
-            user-select: none; /* Verhindert Textmarkierung beim Tippen */
+            user-select: none;
+            pointer-events: none; /* Klicks gehen durch den Text durch zur Grafik */
         }
 
-        /* Container für die interaktive Grafik */
         .constellation {
             position: relative;
             height: 300px;
             width: 100%;
             margin: 0 auto;
-            /* Ermöglicht das Platzieren von Partikeln */
-            pointer-events: none; 
-        }
-        /* Nur die Punkte sollen Klicks abfangen */
-        .dot-wrapper {
-            pointer-events: auto;
         }
 
         .dot-wrapper {
@@ -57,6 +51,9 @@
             justify-content: center;
             align-items: center;
             transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 20;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .outer-ring {
@@ -68,30 +65,6 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            transition: all 0.2s ease;
-        }
-
-        /* --- Puls-Effekt CSS --- */
-        /* Diese Klasse wird per JS beim Klick hinzugefügt */
-        .constellation.active .outer-ring {
-            animation: ring-pulse 1s ease-out forwards;
-        }
-
-        @keyframes ring-pulse {
-            0% {
-                transform: scale(1);
-                border-color: rgba(166, 132, 93, 0.3);
-                box-shadow: 0 0 0 0px rgba(166, 132, 93, 0.4);
-            }
-            50% {
-                border-color: rgba(166, 132, 93, 0.8);
-                box-shadow: 0 0 10px 4px rgba(166, 132, 93, 0.2);
-            }
-            100% {
-                transform: scale(1.15);
-                border-color: rgba(166, 132, 93, 0.0);
-                box-shadow: 0 0 20px 15px rgba(166, 132, 93, 0.0);
-            }
         }
 
         .inner-dot {
@@ -101,61 +74,63 @@
             border-radius: 50%;
         }
 
-        /* Exakte Positionierung der Punkte */
+        /* --- Intensiver Puls-Effekt für den getippten Ring --- */
+        .dot-wrapper.active .outer-ring {
+            animation: intense-pulse 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes intense-pulse {
+            0% { transform: scale(1); border-color: #a6845d; box-shadow: 0 0 0 0px rgba(166, 132, 93, 0.7); }
+            100% { transform: scale(4); border-color: rgba(166, 132, 93, 0); box-shadow: 0 0 40px 20px rgba(166, 132, 93, 0); }
+        }
+
+        /* Positionen */
         .p1 { top: 15%; left: 18%; }
         .p2 { top: 45%; left: 63%; }
         .p3 { top: 67%; left: 28%; }
         .p4 { top: 88%; left: 78%; }
 
-        /* --- Verbindungslinien SVG --- */
         svg {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1;
         }
 
         line {
-            stroke: #a6845d;
-            stroke-width: 1;
-            stroke-dasharray: 5, 5;
-            opacity: 0.2;
+            stroke: #a6845d; stroke-width: 1; stroke-dasharray: 5, 5; opacity: 0.2;
         }
 
-        /* --- Funken-Partikel CSS --- */
+        /* --- Partikel System (Full Screen) --- */
+        #particle-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 100;
+        }
+
         .sparkle {
             position: absolute;
-            width: 4px;
-            height: 4px;
             background-color: #a6845d;
             border-radius: 50%;
-            pointer-events: none;
             opacity: 0;
-            /* Die Animation wird per JS zugewiesen */
         }
 
-        @keyframes sparkle-fly {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                /* Diese Werte werden per JS für jeden Funken variiert */
-                transform: translate(var(--dx), var(--dy)) scale(0);
-                opacity: 0;
-            }
+        @keyframes explode {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            80% { opacity: 0.8; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
         }
-
     </style>
 </head>
 <body>
 
-    <div class="container" id="interaction-zone">
+    <div id="particle-container"></div>
+
+    <div class="container">
         <h1>alex heinemann</h1>
 
-        <div class="constellation" id="constellation-graphic">
+        <div class="constellation">
             <svg viewBox="0 0 400 300">
                 <line x1="18%" y1="15%" x2="63%" y2="45%" />
                 <line x1="18%" y1="15%" x2="28%" y2="67%" />
@@ -163,85 +138,66 @@
                 <line x1="63%" y1="45%" x2="78%" y2="88%" />
             </svg>
 
-            <div class="dot-wrapper p1" id="dot1"><div class="outer-ring"><div class="inner-dot"></div></div></div>
-            <div class="dot-wrapper p2" id="dot2"><div class="outer-ring"><div class="inner-dot"></div></div></div>
-            <div class="dot-wrapper p3" id="dot3"><div class="outer-ring"><div class="inner-dot"></div></div></div>
-            <div class="dot-wrapper p4" id="dot4"><div class="outer-ring"><div class="inner-dot"></div></div></div>
+            <div class="dot-wrapper p1" onclick="triggerEffect(this)"><div class="outer-ring"><div class="inner-dot"></div></div></div>
+            <div class="dot-wrapper p2" onclick="triggerEffect(this)"><div class="outer-ring"><div class="inner-dot"></div></div></div>
+            <div class="dot-wrapper p3" onclick="triggerEffect(this)"><div class="outer-ring"><div class="inner-dot"></div></div></div>
+            <div class="dot-wrapper p4" onclick="triggerEffect(this)"><div class="outer-ring"><div class="inner-dot"></div></div></div>
         </div>
     </div>
 
     <script>
-        const constellation = document.getElementById('constellation-graphic');
-        const dots = [
-            document.getElementById('dot1'),
-            document.getElementById('dot2'),
-            document.getElementById('dot3'),
-            document.getElementById('dot4')
-        ];
+        const particleContainer = document.getElementById('particle-container');
 
-        // Die Haupt-Interaktionszone ist der gesamte Text/Grafik-Bereich
-        document.getElementById('interaction-zone').addEventListener('click', function(e) {
+        function triggerEffect(element) {
+            // 1. Ring-Animation neu starten
+            element.classList.remove('active');
+            void element.offsetWidth; 
+            element.classList.add('active');
+
+            // 2. Position des getippten Punktes ermitteln
+            const rect = element.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            // 3. Massenhaft Funken erzeugen (ca. 40-50 Stück)
+            createExplosion(x, y);
+        }
+
+        function createExplosion(x, y) {
+            const count = 45; 
             
-            // 1. CSS-Puls-Animation für die Ringe triggern
-            // Wir entfernen die Klasse erst, damit sie neu hinzugefügt werden kann (Restart Animation)
-            constellation.classList.remove('active');
-            // 'void trigger' zwingt den Browser zum CSS-Reflow
-            void constellation.offsetWidth; 
-            constellation.classList.add('active');
-
-            // Nach der Animationsdauer die Klasse wieder entfernen
-            setTimeout(() => {
-                constellation.classList.remove('active');
-            }, 1000); // 1000ms = Dauer der @keyframes ring-pulse
-
-            // 2. JS-Effekt: Funken von jedem Punkt erzeugen
-            dots.forEach(dot => {
-                createSparkles(dot);
-            });
-        });
-
-        // Funktion zum Erzeugen und Animieren von Funken-Partikeln
-        function createSparkles(targetDot) {
-            // Holen der Position des Punktes relative zur .constellation
-            const dotRect = targetDot.getBoundingClientRect();
-            const constRect = constellation.getBoundingClientRect();
-            
-            const centerX = dotRect.left - constRect.left + dotRect.width / 2;
-            const centerY = dotRect.top - constRect.top + dotRect.height / 2;
-
-            // Anzahl der Funken pro Punkt
-            const sparkleCount = 6;
-
-            for (let i = 0; i < sparkleCount; i++) {
-                const sparkle = document.createElement('div');
-                sparkle.classList.add('sparkle');
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('sparkle');
                 
-                // Startposition (Mitte des Punktes)
-                sparkle.style.left = `${centerX}px`;
-                sparkle.style.top = `${centerY}px`;
-
-                // Zufällige Flugrichtung und Distanz
-                const angle = Math.random() * Math.PI * 2; // 0 bis 360 Grad
-                const distance = 30 + Math.random() * 40; // 30 bis 70 Pixel weit
+                // Zufällige Größe für organischen Look
+                const size = Math.random() * 4 + 1;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
                 
-                // Berechnung der Endposition (dx, dy)
-                const dx = Math.cos(angle) * distance;
-                const dy = Math.sin(angle) * distance;
+                // Startposition am Finger/Punkt
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
 
-                // Zufällige Animationsdauer
-                const duration = 0.5 + Math.random() * 0.5; // 0.5 bis 1 Sekunde
+                // Zufällige Flugrichtung über den ganzen Schirm
+                // Wir nutzen einen großen Radius für die Bewegung
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 50 + Math.random() * 250; // Weite des Wurfs
+                const dx = Math.cos(angle) * velocity;
+                const dy = Math.sin(angle) * velocity;
 
-                // Zuweisung der CSS-Variablen für die @keyframes
-                sparkle.style.setProperty('--dx', `${dx}px`);
-                sparkle.style.setProperty('--dy', `${dy}px`);
-                sparkle.style.animation = `sparkle-fly ${duration}s ease-out forwards`;
+                particle.style.setProperty('--dx', `${dx}px`);
+                particle.style.setProperty('--dy', `${dy}px`);
 
-                // Partikel zur Grafik hinzufügen
-                constellation.appendChild(sparkle);
+                // Animation mit leicht unterschiedlichen Zeiten
+                const duration = 0.6 + Math.random() * 0.9;
+                particle.style.animation = `explode ${duration}s cubic-bezier(0.1, 0.8, 0.3, 1) forwards`;
 
-                // Partikel nach der Animation wieder entfernen, um Speicher zu sparen
+                particleContainer.appendChild(particle);
+
+                // Cleanup
                 setTimeout(() => {
-                    sparkle.remove();
+                    particle.remove();
                 }, duration * 1000);
             }
         }
