@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>alex heinemann</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #2c2c2c; /* Original Hintergrundfarbe */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Playfair Display', serif;
+            overflow: hidden;
+            color: #a6845d; /* Original Text/Akzentfarbe */
+        }
+
+        /* Hauptcontainer, um alles zentriert zu halten */
+        .main-container {
+            text-align: center;
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #a6845d;
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 50px;
+            text-transform: lowercase; /* Alles kleingeschrieben wie im Bild */
+            z-index: 10;
+        }
+
+        /* Container für die Konstellation, auf die sich das Parallax-Script bezieht */
+        .constellation-parallax-container {
+            position: relative;
+            width: 300px;
+            height: 350px;
+            /* sanfter Übergang für das Wabern */
+            transition: transform 0.1s ease-out;
+            will-change: transform;
+        }
+
+        /* Die Grafik-Elemente */
+        .constellation-elements {
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+
+        .dot-wrapper {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: translate(-50%, -50%); /* Zentriert den Punkt exakt auf der Koordinate */
+        }
+
+        .outer-ring {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(166, 132, 93, 0.3); /* Transparenter Ring */
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .inner-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #a6845d;
+            border-radius: 50%;
+        }
+
+        /* --- Exakte Positionierung der Punkte basierend auf deiner Vorlage --- */
+        /* Diese Koordinaten definieren die Grundform */
+        .p1 { top: 15%; left: 18%; }  /* Oben Links */
+        .p2 { top: 45%; left: 63%; }  /* Mitte Rechts */
+        .p3 { top: 67%; left: 28%; }  /* Unten Links */
+        .p4 { top: 88%; left: 78%; }  /* Unten Rechts */
+
+        /* --- Verbindungslinien (SVG) --- */
+        svg.connections {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Linien hinter den Punkten */
+        }
+
+        line {
+            stroke: #a6845d;
+            stroke-width: 1;
+            stroke-dasharray: 4, 4; /* Gestrichelte Linie */
+            opacity: 0.25; /* Sehr dezent */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>alex heinemann</h1>
+
+        <div class="constellation-parallax-container" id="parallax-scene">
+            <div class="constellation-elements">
+                
+                <svg class="connections" viewBox="0 0 300 350">
+                    <line x1="18%" y1="15%" x2="63%" y2="45%" /> <line x1="18%" y1="15%" x2="28%" y2="67%" /> <line x1="28%" y1="67%" x2="63%" y2="45%" /> <line x1="63%" y1="45%" x2="78%" y2="88%" /> </svg>
+
+                <div class="dot-wrapper p1"><div class="outer-ring"><div class="inner-dot"></div></div></div>
+                <div class="dot-wrapper p2"><div class="outer-ring"><div class="inner-dot"></div></div></div>
+                <div class="dot-wrapper p3"><div class="outer-ring"><div class="inner-dot"></div></div></div>
+                <div class="dot-wrapper p4"><div class="outer-ring"><div class="inner-dot"></div></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- PARALLAX / WABER-EFFEKT SKRIPT ---
+
+        const scene = document.getElementById('parallax-scene');
+        
+        // Wie stark soll der Effekt sein? (Höherer Wert = mehr Bewegung)
+        const sensitivity = 20; 
+
+        // Prüfen, ob das Gerät Bewegungssensoren hat und wir darauf zugreifen dürfen
+        if (window.DeviceOrientationEvent) {
+            
+            // Für iOS (ab v13) ist eine explizite Erlaubnis nötig.
+            // Dies erfordert, dass die Seite über HTTPS geladen wird.
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                // Wir fügen einen unsichtbaren Overlay-Button hinzu, da iOS eine User-Interaktion benötigt.
+                const permissionBtn = document.createElement('button');
+                permissionBtn.innerText = "Klicken für Interaktion";
+                permissionBtn.style.position = 'fixed';
+                permissionBtn.style.top = '0'; permissionBtn.style.left = '0';
+                permissionBtn.style.width = '100%'; permissionBtn.style.height = '100%';
+                permissionBtn.style.opacity = '0'; permissionBtn.style.zIndex = '999';
+                document.body.appendChild(permissionBtn);
+
+                permissionBtn.addEventListener('click', () => {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === 'granted') {
+                                window.addEventListener('deviceorientation', handleOrientation);
+                                permissionBtn.remove(); // Button entfernen
+                            }
+                        })
+                        .catch(console.error);
+                });
+            } else {
+                // Für Android und ältere iOS-Versionen: Direktes Listening
+                window.addEventListener('deviceorientation', handleOrientation);
+            }
+        }
+
+        // Die Funktion, die die Drehung verarbeitet
+        function handleOrientation(event) {
+            // beta: Neigung nach vorne/hinten (-180 bis 180) -> Y-Achse
+            // gamma: Neigung nach links/rechts (-90 bis 90) -> X-Achse
+            let beta = event.beta;
+            let gamma = event.gamma;
+
+            // Werte normalisieren und begrenzen, um extremes Wackeln zu vermeiden
+            if (beta > 90) beta = 90;
+            if (beta < -90) beta = -90;
+
+            // Berechnung der Verschiebung (leichtes Offset, um die Bewegung subtil zu machen)
+            const xOffset = (gamma / 90) * sensitivity;
+            const yOffset = (beta / 90) * sensitivity;
+
+            // Die CSS-Transformation anwenden (Wabern/Parallax)
+            // Wir benutzen translate3d für Hardware-Beschleunigung
+            scene.style.transform = `translate3d(${xOffset}px, ${yOffset}px, 0)`;
+        }
+    </script>
+
+</body>
+</html>
