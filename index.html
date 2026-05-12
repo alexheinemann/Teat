@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>alex heinemann - Interactive</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
+    <title>alex heinemann</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -35,7 +35,7 @@
             margin-bottom: 60px;
             text-transform: lowercase;
             user-select: none;
-            pointer-events: none; /* Klicks gehen durch den Text durch zur Grafik */
+            pointer-events: none;
         }
 
         .constellation {
@@ -64,7 +64,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
+            transition: transform 0.3s ease;
         }
 
         .inner-dot {
@@ -74,14 +74,15 @@
             border-radius: 50%;
         }
 
-        /* --- Intensiver Puls-Effekt für den getippten Ring --- */
+        /* --- Mega Puls Effekt --- */
         .dot-wrapper.active .outer-ring {
-            animation: intense-pulse 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            animation: mega-pulse 0.6s cubic-bezier(0.15, 0.8, 0.3, 1) forwards;
         }
 
-        @keyframes intense-pulse {
-            0% { transform: scale(1); border-color: #a6845d; box-shadow: 0 0 0 0px rgba(166, 132, 93, 0.7); }
-            100% { transform: scale(4); border-color: rgba(166, 132, 93, 0); box-shadow: 0 0 40px 20px rgba(166, 132, 93, 0); }
+        @keyframes mega-pulse {
+            0% { transform: scale(1); border-color: #a6845d; box-shadow: 0 0 0 0px rgba(166, 132, 93, 0.8); }
+            50% { opacity: 1; }
+            100% { transform: scale(6); border-color: rgba(166, 132, 93, 0); box-shadow: 0 0 60px 30px rgba(166, 132, 93, 0); opacity: 0; }
         }
 
         /* Positionen */
@@ -90,17 +91,10 @@
         .p3 { top: 67%; left: 28%; }
         .p4 { top: 88%; left: 78%; }
 
-        svg {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-        }
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        line { stroke: #a6845d; stroke-width: 1; stroke-dasharray: 5, 5; opacity: 0.2; }
 
-        line {
-            stroke: #a6845d; stroke-width: 1; stroke-dasharray: 5, 5; opacity: 0.2;
-        }
-
-        /* --- Partikel System (Full Screen) --- */
+        /* --- Partikel & Typo Overlay --- */
         #particle-container {
             position: fixed;
             top: 0; left: 0;
@@ -116,10 +110,26 @@
             opacity: 0;
         }
 
-        @keyframes explode {
+        @keyframes explode-v2 {
             0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            80% { opacity: 0.8; }
             100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+        }
+
+        .unfriendly-text {
+            position: absolute;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: #a6845d;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 110;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(0); opacity: 0; }
+            20% { opacity: 0.8; }
+            100% { transform: translateY(-40px); opacity: 0; }
         }
     </style>
 </head>
@@ -129,7 +139,6 @@
 
     <div class="container">
         <h1>alex heinemann</h1>
-
         <div class="constellation">
             <svg viewBox="0 0 400 300">
                 <line x1="18%" y1="15%" x2="63%" y2="45%" />
@@ -147,61 +156,65 @@
 
     <script>
         const particleContainer = document.getElementById('particle-container');
+        const phrases = ["Lass mich!", "Aua!", "Neeee!", "Stopp!", "Nicht anfassen.", "Lass das."];
 
         function triggerEffect(element) {
-            // 1. Ring-Animation neu starten
+            // 1. Ring Animation
             element.classList.remove('active');
             void element.offsetWidth; 
             element.classList.add('active');
 
-            // 2. Position des getippten Punktes ermitteln
             const rect = element.getBoundingClientRect();
             const x = rect.left + rect.width / 2;
             const y = rect.top + rect.height / 2;
 
-            // 3. Massenhaft Funken erzeugen (ca. 40-50 Stück)
+            // 2. Unfreundlicher Text (mit 70% Wahrscheinlichkeit)
+            if (Math.random() > 0.3) {
+                showText(x, y);
+            }
+
+            // 3. Explosion
             createExplosion(x, y);
+
+            // Zurücksetzen: Nach der Animation ist der Ring wieder "normal",
+            // da die Animation nur einmal abläuft (forwards) und wir die Klasse nicht permanent lassen.
+            setTimeout(() => { element.classList.remove('active'); }, 600);
+        }
+
+        function showText(x, y) {
+            const textEl = document.createElement('div');
+            textEl.className = 'unfriendly-text';
+            textEl.innerText = phrases[Math.floor(Math.random() * phrases.length)];
+            textEl.style.left = `${x}px`;
+            textEl.style.top = `${y - 30}px`;
+            textEl.style.animation = 'float-up 1.5s ease-out forwards';
+            particleContainer.appendChild(textEl);
+            setTimeout(() => textEl.remove(), 1500);
         }
 
         function createExplosion(x, y) {
-            const count = 45; 
-            
+            const count = 60; // Noch mehr Funken
             for (let i = 0; i < count; i++) {
                 const particle = document.createElement('div');
-                particle.classList.add('sparkle');
-                
-                // Zufällige Größe für organischen Look
-                const size = Math.random() * 4 + 1;
+                particle.className = 'sparkle';
+                const size = Math.random() * 5 + 1;
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
-                
-                // Startposition am Finger/Punkt
                 particle.style.left = `${x}px`;
                 particle.style.top = `${y}px`;
 
-                // Zufällige Flugrichtung über den ganzen Schirm
-                // Wir nutzen einen großen Radius für die Bewegung
                 const angle = Math.random() * Math.PI * 2;
-                const velocity = 50 + Math.random() * 250; // Weite des Wurfs
-                const dx = Math.cos(angle) * velocity;
-                const dy = Math.sin(angle) * velocity;
+                const velocity = 80 + Math.random() * 350; // Noch weitere Distanz
+                particle.style.setProperty('--dx', `${Math.cos(angle) * velocity}px`);
+                particle.style.setProperty('--dy', `${Math.sin(angle) * velocity}px`);
 
-                particle.style.setProperty('--dx', `${dx}px`);
-                particle.style.setProperty('--dy', `${dy}px`);
-
-                // Animation mit leicht unterschiedlichen Zeiten
-                const duration = 0.6 + Math.random() * 0.9;
-                particle.style.animation = `explode ${duration}s cubic-bezier(0.1, 0.8, 0.3, 1) forwards`;
+                const duration = 0.5 + Math.random() * 1.2;
+                particle.style.animation = `explode-v2 ${duration}s cubic-bezier(0.1, 0.9, 0.2, 1) forwards`;
 
                 particleContainer.appendChild(particle);
-
-                // Cleanup
-                setTimeout(() => {
-                    particle.remove();
-                }, duration * 1000);
+                setTimeout(() => particle.remove(), duration * 1000);
             }
         }
     </script>
-
 </body>
 </html>
