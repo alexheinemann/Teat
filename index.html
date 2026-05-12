@@ -90,7 +90,6 @@
         svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
         line { stroke: #a6845d; stroke-width: 1; stroke-dasharray: 5, 5; opacity: 0.2; }
 
-        /* --- CTA Button Styling --- */
         .cta-button {
             position: fixed;
             bottom: 8vh;
@@ -110,6 +109,13 @@
             white-space: nowrap;
             z-index: 50;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        .cta-button:disabled {
+            background-color: #444;
+            color: #888;
+            cursor: not-allowed;
+            box-shadow: none;
         }
 
         #particle-container {
@@ -182,15 +188,25 @@
         const evasiveBtn = document.getElementById('evasive-btn');
         let inactivityTimer;
         let baitTimer;
+        let escapeCount = 0;
+        let isDisabled = false;
 
         const moveButton = () => {
+            if (isDisabled) return;
+
             clearTimeout(inactivityTimer);
             clearTimeout(baitTimer);
+            
+            escapeCount++;
 
-            // Erst frecher Spruch
+            // Nach 7 Mal ausweichen: Countdown triggern
+            if (escapeCount >= 7) {
+                startCooldown();
+                return;
+            }
+
             evasiveBtn.innerText = insultPhrases[Math.floor(Math.random() * insultPhrases.length)];
             
-            // Viewport-Sichere Positionierung
             const btnWidth = evasiveBtn.offsetWidth;
             const btnHeight = evasiveBtn.offsetHeight;
             const padding = 20;
@@ -207,16 +223,40 @@
             evasiveBtn.style.bottom = 'auto';
             evasiveBtn.style.transform = 'none';
 
-            // Köder-Text erscheint nach 1 Sekunde
             baitTimer = setTimeout(() => {
-                evasiveBtn.innerText = baitPhrases[Math.floor(Math.random() * baitPhrases.length)];
+                if (!isDisabled) {
+                    evasiveBtn.innerText = baitPhrases[Math.floor(Math.random() * baitPhrases.length)];
+                }
             }, 1000);
 
-            // Rückkehr zur Basis nach 8 Sekunden Inaktivität
             inactivityTimer = setTimeout(resetButton, 8000);
         };
 
+        const startCooldown = () => {
+            isDisabled = true;
+            evasiveBtn.disabled = true;
+            escapeCount = 0; // Reset für die nächste Runde
+            
+            let timeLeft = 10;
+            evasiveBtn.innerText = `Überlastung: ${timeLeft}s`;
+
+            const countdown = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    isDisabled = false;
+                    evasiveBtn.disabled = false;
+                    evasiveBtn.innerText = "Klick mich";
+                    // Button bleibt stehen, wo er ist, bis er wieder getriggert wird
+                } else {
+                    evasiveBtn.innerText = `Überlastung: ${timeLeft}s`;
+                }
+            }, 1000);
+        };
+
         const resetButton = () => {
+            if (isDisabled) return;
+            escapeCount = 0;
             evasiveBtn.innerText = "Klick mich";
             evasiveBtn.style.left = "50%";
             evasiveBtn.style.top = "auto";
@@ -226,11 +266,10 @@
 
         evasiveBtn.addEventListener('mouseover', moveButton);
         evasiveBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
+            if (!isDisabled) e.preventDefault();
             moveButton();
         });
 
-        // --- PUNKT EFFEKTE ---
         function triggerEffect(element) {
             element.classList.remove('active');
             void element.offsetWidth; 
@@ -249,7 +288,7 @@
             textEl.innerText = phrases[Math.floor(Math.random() * phrases.length)];
             textEl.style.left = `${x}px`;
             textEl.style.top = `${y - 30}px`;
-            textEl.style.animation = 'float-up 2.5s ease-out forwards'; // Text steht länger (2.5s)
+            textEl.style.animation = 'float-up 2.5s ease-out forwards';
             particleContainer.appendChild(textEl);
             setTimeout(() => textEl.remove(), 2500);
         }
