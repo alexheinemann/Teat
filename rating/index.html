@@ -38,7 +38,7 @@
             justify-content: space-between;
             align-items: center;
             max-width: 1100px;
-            margin: 0 auto 40px auto;
+            margin: 0 auto 30px auto;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 20px;
         }
@@ -53,51 +53,48 @@
 
         .theme-switch {
             cursor: pointer;
-            padding: 8px 16px;
+            padding: 8px 15px;
             border-radius: 4px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             color: var(--text-color);
-            font-size: 0.75em;
+            font-size: 0.8em;
             font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
         }
 
         .container {
             background: var(--card-bg);
-            padding: 40px;
+            padding: 30px;
             border-radius: 12px;
-            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             max-width: 1100px;
             margin: 0 auto;
             display: grid;
             grid-template-columns: 400px 1fr;
-            gap: 60px;
+            gap: 40px;
+            border: 1px solid var(--border-color);
         }
 
-        @media (max-width: 950px) {
+        @media (max-width: 900px) {
             .container { grid-template-columns: 1fr; }
-            .chart-container { order: -1; position: relative; top: 0; height: 400px; }
         }
 
         .category-item {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .category-label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: 600;
             font-size: 0.8em;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            opacity: 0.8;
         }
 
         .rating-scale {
             display: flex;
-            gap: 6px;
+            gap: 5px;
         }
 
         .rating-btn {
@@ -108,8 +105,8 @@
             color: var(--text-color);
             border-radius: 4px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 700;
+            transition: all 0.2s;
+            font-weight: bold;
         }
 
         .rating-btn.active {
@@ -120,8 +117,8 @@
 
         .chart-container {
             position: sticky;
-            top: 40px;
-            height: 550px; /* Deutlich größere Grafik */
+            top: 20px;
+            height: 550px; /* Deutlich vergrößert */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -141,9 +138,12 @@
     </div>
 
     <div class="container">
+        <!-- Input Bereich -->
         <div id="inputs" class="input-section">
-            </div>
+            <!-- Kategorien via JS -->
+        </div>
 
+        <!-- Chart Bereich -->
         <div class="chart-container">
             <canvas id="muscleChart"></canvas>
         </div>
@@ -203,8 +203,7 @@
                         backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
                         borderColor: isDark ? '#ffffff' : '#000000',
                         pointBackgroundColor: isDark ? '#ffffff' : '#000000',
-                        borderWidth: 1.5,
-                        pointRadius: 3
+                        borderWidth: 1.5
                     }]
                 },
                 options: {
@@ -219,7 +218,7 @@
                             angleLines: { color: isDark ? '#333333' : '#eeeeee' },
                             pointLabels: {
                                 color: isDark ? '#ffffff' : '#000000',
-                                font: { size: 11, weight: '500', family: 'Inter' }
+                                font: { size: 11, weight: '600', family: 'Inter' }
                             }
                         }
                     },
@@ -230,12 +229,11 @@
 
         function updateChartTheme(theme) {
             const isDark = theme === 'dark';
-            myChart.data.datasets[0].backgroundColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-            myChart.data.datasets[0].borderColor = isDark ? '#ffffff' : '#000000';
-            myChart.data.datasets[0].pointBackgroundColor = isDark ? '#ffffff' : '#000000';
             myChart.options.scales.r.grid.color = isDark ? '#333333' : '#eeeeee';
             myChart.options.scales.r.angleLines.color = isDark ? '#333333' : '#eeeeee';
             myChart.options.scales.r.pointLabels.color = isDark ? '#ffffff' : '#000000';
+            myChart.data.datasets[0].borderColor = isDark ? '#ffffff' : '#000000';
+            myChart.data.datasets[0].backgroundColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
             myChart.update();
         }
 
