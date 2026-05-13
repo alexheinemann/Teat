@@ -155,7 +155,6 @@
 
         .legend-mini { font-size: 1rem; margin-bottom: 35px; font-weight: bold; opacity: 0.6; }
         
-        /* Overlay für den Flash-Effekt */
         #flashOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -174,7 +173,6 @@
             <button class="theme-switch" onclick="toggleTheme()">🌓 Mode</button>
         </div>
 
-        <!-- SCHRITT 1: EINGABE -->
         <div id="step1" class="step active">
             <h1>Muscle Review 2026</h1>
             <div class="legend-mini">1 = LAPPEN | 5 = MR. OLYMPIA</div>
@@ -182,7 +180,6 @@
             <button class="primary-btn" onclick="triggerAnalyse()">Analyse starten</button>
         </div>
 
-        <!-- SCHRITT 2: ERGEBNIS -->
         <div id="step2" class="step">
             <div class="result-view">
                 <h1>Dein persönliches Versagen</h1>
@@ -243,16 +240,8 @@
         function triggerAnalyse() {
             const container = document.getElementById('mainContainer');
             const overlay = document.getElementById('flashOverlay');
-            
-            // 1. Shake
             container.classList.add('shake-effect');
-            
-            // 2. Flash (kurz verzögert für maximale Wirkung)
-            setTimeout(() => {
-                overlay.classList.add('flash-effect');
-            }, 100);
-
-            // 3. Seitenwechsel nach Animation
+            setTimeout(() => overlay.classList.add('flash-effect'), 100);
             setTimeout(() => {
                 showResults();
                 container.classList.remove('shake-effect');
@@ -272,7 +261,6 @@
             const ctx = document.getElementById('muscleChart').getContext('2d');
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const accent = isDark ? '#ffca28' : '#d4af37';
-
             if (myChart) myChart.destroy();
             myChart = new Chart(ctx, {
                 type: 'radar',
@@ -313,24 +301,51 @@
         function downloadChart() {
             const name = prompt("Name des Athleten:", "Lappen");
             if (!name) return;
+            const insultText = document.getElementById('insult').innerText;
             const originalCanvas = document.getElementById('muscleChart');
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             
-            tempCanvas.width = 800; tempCanvas.height = 1000;
+            tempCanvas.width = 800; tempCanvas.height = 1100;
             tempCtx.fillStyle = isDark ? '#0a0a0a' : '#ffffff';
-            tempCtx.fillRect(0, 0, 800, 1000);
+            tempCtx.fillRect(0, 0, 800, 1100);
+
+            // Headline
             tempCtx.fillStyle = isDark ? '#ffca28' : '#d4af37';
             tempCtx.font = '900 50px sans-serif';
             tempCtx.textAlign = 'center';
             tempCtx.fillText('MUSCLE REVIEW 2026', 400, 100);
+
+            // Name
             tempCtx.fillStyle = isDark ? '#fff' : '#1a1a1a';
             tempCtx.font = '30px sans-serif';
             tempCtx.fillText('Athlet: ' + name, 400, 160);
-            tempCtx.drawImage(originalCanvas, 100, 300, 600, 600);
+
+            // Insult (mit Zeilenumbruch)
+            tempCtx.fillStyle = isDark ? '#ffca28' : '#d4af37';
+            tempCtx.font = 'italic 20px sans-serif';
+            const words = insultText.split(' ');
+            let line = '';
+            let y = 210;
+            for(let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = tempCtx.measureText(testLine);
+                if (metrics.width > 700 && n > 0) {
+                    tempCtx.fillText(line, 400, y);
+                    line = words[n] + ' ';
+                    y += 30;
+                } else {
+                    line = testLine;
+                }
+            }
+            tempCtx.fillText(line, 400, y);
+
+            // Chart
+            tempCtx.drawImage(originalCanvas, 100, 350, 600, 600);
+
             const link = document.createElement('a');
-            link.download = `Review_${name}.png`;
+            link.download = `MuscleReview_${name}.png`;
             link.href = tempCanvas.toDataURL();
             link.click();
         }
