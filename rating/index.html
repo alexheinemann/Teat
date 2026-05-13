@@ -25,7 +25,7 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -37,46 +37,26 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 1100px;
+            max-width: 1000px;
             margin: 0 auto 30px auto;
         }
 
-        h1 {
-            font-size: 1.5rem;
-            letter-spacing: -0.02em;
-            color: var(--accent-color);
-            margin: 0;
-            text-transform: uppercase;
-        }
-
-        .theme-switch {
-            cursor: pointer;
-            padding: 8px 15px;
-            border-radius: 20px;
-            background: var(--card-bg);
-            border: 1px solid var(--accent-color);
-            color: var(--text-color);
-            font-size: 0.8em;
-            font-weight: bold;
-        }
+        h1 { color: var(--accent-color); text-transform: uppercase; letter-spacing: -1px; margin: 0; }
 
         .container {
             background: var(--card-bg);
             padding: 30px;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 1100px;
+            max-width: 1000px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 40px;
+            min-height: 500px;
         }
 
-        @media (max-width: 900px) {
-            .container { grid-template-columns: 1fr; }
-        }
+        /* Schritt-Steuerung */
+        .step { display: none; }
+        .step.active { display: block; }
 
-        /* Legende Style */
         .legend-box {
             background: var(--rating-bg);
             padding: 15px;
@@ -89,66 +69,54 @@
             border-left: 4px solid var(--accent-color);
         }
 
-        .category-item { margin-bottom: 20px; }
-        .category-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 0.85em;
-            opacity: 0.9;
+        .category-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        .rating-scale { display: flex; gap: 5px; }
+        @media (max-width: 700px) { .category-grid { grid-template-columns: 1fr; } }
 
+        .category-label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85em; }
+        .rating-scale { display: flex; gap: 4px; }
         .rating-btn {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            background: var(--rating-bg);
-            color: var(--text-color);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: bold;
+            flex: 1; padding: 10px; border: 1px solid var(--border-color);
+            background: var(--rating-bg); color: var(--text-color);
+            border-radius: 4px; cursor: pointer; font-weight: bold;
         }
+        .rating-btn.active { background: var(--accent-color); color: #000; border-color: var(--accent-color); }
 
-        .rating-btn.active {
-            background: var(--accent-color);
-            color: #000;
-            border-color: var(--accent-color);
-        }
-
-        .chart-side {
-            display: flex;
-            flex-direction: column;
+        /* Analyse Seite */
+        .result-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
             align-items: center;
-            position: sticky;
-            top: 20px;
-            height: fit-content;
         }
 
-        .chart-container {
-            width: 100%;
-            height: 500px;
-            margin-bottom: 25px;
-        }
-
-        .download-btn {
-            background: var(--accent-color);
-            color: #000;
-            border: none;
-            padding: 14px 28px;
+        .insult-box {
+            padding: 20px;
+            border: 1px dashed var(--accent-color);
             border-radius: 8px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
+            font-style: italic;
+            color: var(--accent-color);
+            font-weight: 500;
         }
 
-        .download-btn:hover { 
-            transform: scale(1.03); 
-            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+        .chart-container { height: 400px; width: 100%; }
+
+        .primary-btn {
+            background: var(--accent-color);
+            color: #000; border: none; padding: 15px 30px;
+            border-radius: 8px; font-weight: 800; cursor: pointer;
+            text-transform: uppercase; width: 100%; margin-top: 20px;
+        }
+
+        .secondary-btn {
+            background: transparent; border: 1px solid var(--border-color);
+            color: var(--text-color); padding: 10px; border-radius: 8px;
+            cursor: pointer; margin-top: 10px; width: 100%;
         }
     </style>
 </head>
@@ -156,52 +124,65 @@
 
     <div class="header">
         <h1>Muscle Review 2026</h1>
-        <button class="theme-switch" onclick="toggleTheme()">🌓 Theme Wechseln</button>
+        <button onclick="toggleTheme()" class="rating-btn" style="flex:none; width:auto;">🌓 Mode</button>
     </div>
 
     <div class="container">
-        <div class="input-section">
-            <!-- Legende -->
+        <!-- SCHRITT 1: EINGABE -->
+        <div id="step1" class="step active">
             <div class="legend-box">
                 <span>1 = Lappen</span>
-                <span>← Skala →</span>
+                <span>← DEINE REALITÄT →</span>
                 <span>5 = Mr. Olympia</span>
             </div>
-            
-            <div id="inputs">
-                <!-- Kategorien via JS -->
-            </div>
+            <div id="inputs" class="category-grid"></div>
+            <button class="primary-btn" onclick="showResults()">Analyse starten (auf eigene Gefahr)</button>
         </div>
 
-        <div class="chart-side">
-            <div class="chart-container">
-                <canvas id="muscleChart"></canvas>
+        <!-- SCHRITT 2: ERGEBNIS -->
+        <div id="step2" class="step">
+            <div class="result-layout">
+                <div>
+                    <h3>Deine "Leistung"</h3>
+                    <div id="insult" class="insult-box"></div>
+                    <p>Zusammenfassend lässt sich sagen: Hör auf Ausreden zu suchen und geh endlich wieder richtig trainieren.</p>
+                    <button class="primary-btn" onclick="downloadChart()">Als .png speichern</button>
+                    <button class="secondary-btn" onclick="location.reload()">Neue Bewertung</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="muscleChart"></canvas>
+                </div>
             </div>
-            <button class="download-btn" onclick="downloadChart()">Als .png speichern</button>
         </div>
     </div>
 
     <script>
         const categories = [
-            'Bankdrücken', 'Kniebeugen', 'Kreuzheben', 
-            'Bizepsumfang', 'Schulterbreite', 'Waden',
-            'Definition (KFA)', 'Vaskularität', 'Pumpgefühl', 'Regeneration'
+            'Bankdrücken', 'Kniebeugen', 'Kreuzheben', 'Bizepsumfang', 
+            'Schulterbreite', 'Waden', 'Definition (KFA)', 'Vaskularität', 
+            'Pumpgefühl', 'Regeneration'
+        ];
+
+        const insults = [
+            "Das Spinnennetz sieht eher aus wie ein Hilferuf.",
+            "Physik ist keine Meinung – du musst einfach schwerer trainieren.",
+            "Dein Bizeps hat die Vaskularität eines Toastbrots. Mehr Gewicht!",
+            "Süß, dass du das Training nennst. Andere nennen das Aufwärmen.",
+            "Die Grafik lügt nicht, aber deine Selbsteinschätzung vermutlich schon. Ab ins Gym.",
+            "Herzlichen Glückwunsch zu dieser stabilen Mittelmäßigkeit. Nicht.",
+            "Bist du sicher, dass du Hanteln hebst oder sortierst du sie nur?",
+            "Dieses Review schreit förmlich nach Disziplinlosigkeit. Beweg dich.",
+            "Selbst meine KI-Algorithmen haben mehr Muskeltonus als diese Werte.",
+            "Schönes Netz. Würde gut als Untersetzer für deinen Proteinshake taugen, den du offensichtlich umsonst trinkst."
         ];
 
         let scores = new Array(categories.length).fill(1);
         let myChart;
 
-        function toggleTheme() {
-            const body = document.documentElement;
-            const newTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            body.setAttribute('data-theme', newTheme);
-            updateChartTheme(newTheme);
-        }
-
+        // UI Aufbau
         const inputContainer = document.getElementById('inputs');
         categories.forEach((cat, index) => {
             const div = document.createElement('div');
-            div.className = 'category-item';
             div.innerHTML = `
                 <span class="category-label">${cat}</span>
                 <div class="rating-scale">
@@ -211,47 +192,48 @@
             inputContainer.appendChild(div);
         });
 
-        function setScore(catIndex, value, btn) {
-            scores[catIndex] = value;
-            const parent = btn.parentElement;
-            parent.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
+        function setScore(idx, val, btn) {
+            scores[idx] = val;
+            btn.parentElement.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            myChart.data.datasets[0].data = scores;
-            myChart.update();
         }
 
-        function initChart(theme = 'light') {
+        function showResults() {
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            
+            // Zufällige Beleidigung
+            document.getElementById('insult').innerText = insults[Math.floor(Math.random() * insults.length)];
+            
+            initChart(document.documentElement.getAttribute('data-theme') || 'light');
+        }
+
+        function initChart(theme) {
             const ctx = document.getElementById('muscleChart').getContext('2d');
             const isDark = theme === 'dark';
             const gold = isDark ? '#ffca28' : '#d4af37';
-            
+
+            if (myChart) myChart.destroy();
+
             myChart = new Chart(ctx, {
                 type: 'radar',
                 data: {
                     labels: categories,
                     datasets: [{
                         data: scores,
-                        backgroundColor: isDark ? 'rgba(255, 202, 40, 0.15)' : 'rgba(212, 175, 55, 0.15)',
+                        backgroundColor: 'rgba(212, 175, 55, 0.2)',
                         borderColor: gold,
                         pointBackgroundColor: gold,
-                        borderWidth: 2,
-                        pointRadius: 4
+                        borderWidth: 2
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     scales: {
                         r: {
-                            min: 0,
-                            max: 5,
-                            ticks: { display: false, stepSize: 1 },
-                            grid: { color: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' },
-                            angleLines: { color: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' },
-                            pointLabels: {
-                                color: isDark ? '#f1f2f6' : '#2c3e50',
-                                font: { size: 12, weight: '600', family: 'Inter' }
-                            }
+                            min: 0, max: 5, ticks: { display: false, stepSize: 1 },
+                            grid: { color: isDark ? '#333' : '#eee' },
+                            pointLabels: { color: isDark ? '#fff' : '#000', font: { size: 10 } }
                         }
                     },
                     plugins: { legend: { display: false } }
@@ -259,51 +241,45 @@
             });
         }
 
-        function updateChartTheme(theme) {
-            const isDark = theme === 'dark';
-            const gold = isDark ? '#ffca28' : '#d4af37';
-            myChart.data.datasets[0].borderColor = gold;
-            myChart.data.datasets[0].pointBackgroundColor = gold;
-            myChart.options.scales.r.grid.color = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
-            myChart.options.scales.r.pointLabels.color = isDark ? '#f1f2f6' : '#2c3e50';
-            myChart.update();
+        function toggleTheme() {
+            const body = document.documentElement;
+            const newTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            if (myChart) initChart(newTheme);
         }
 
         function downloadChart() {
-            const name = prompt("Bitte gib deinen Namen ein:", "Athlet");
+            const name = prompt("Name für dein Versagen angeben:", "Lappen");
             if (!name) return;
-
+            
             const originalCanvas = document.getElementById('muscleChart');
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = 600; tempCanvas.height = 700;
             
-            tempCanvas.width = originalCanvas.width;
-            tempCanvas.height = originalCanvas.height + 100; // Mehr Platz für Headline & Name
-
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             tempCtx.fillStyle = isDark ? '#0d0d0d' : '#ffffff';
-            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            tempCtx.fillRect(0, 0, 600, 700);
 
-            // Headline
             tempCtx.fillStyle = isDark ? '#ffca28' : '#d4af37';
-            tempCtx.font = 'bold 28px Inter, sans-serif';
+            tempCtx.font = 'bold 30px sans-serif';
             tempCtx.textAlign = 'center';
-            tempCtx.fillText('MUSCLE REVIEW 2026', tempCanvas.width / 2, 45);
+            tempCtx.fillText('MUSCLE REVIEW 2026', 300, 60);
 
-            // Untertitel / Name
-            tempCtx.fillStyle = isDark ? '#ffffff' : '#2c3e50';
-            tempCtx.font = '500 18px Inter, sans-serif';
-            tempCtx.fillText('Self-Assessment: ' + name, tempCanvas.width / 2, 75);
+            tempCtx.fillStyle = isDark ? '#ffffff' : '#333';
+            tempCtx.font = '20px sans-serif';
+            tempCtx.fillText('Athlet: ' + name, 300, 100);
+            
+            tempCtx.font = 'italic 16px sans-serif';
+            tempCtx.fillText('"' + document.getElementById('insult').innerText + '"', 300, 140);
 
-            tempCtx.drawImage(originalCanvas, 0, 100);
+            tempCtx.drawImage(originalCanvas, 50, 180, 500, 500);
 
             const link = document.createElement('a');
-            link.download = `Muscle_Review_${name.replace(/\s+/g, '_')}.png`;
-            link.href = tempCanvas.toDataURL('image/png');
+            link.download = `Review_${name}.png`;
+            link.href = tempCanvas.toDataURL();
             link.click();
         }
-
-        initChart();
     </script>
 </body>
 </html>
