@@ -22,62 +22,82 @@
             margin: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
             min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .container {
             width: 100%;
-            max-width: 500px;
-            padding: 20px;
-            box-sizing: border-box;
+            max-width: 1100px; /* Wieder breiter für bessere Bedienbarkeit */
             text-align: center;
+            align-self: center;
         }
 
         .step { display: none; width: 100%; }
-        .step.active { display: flex; flex-direction: column; align-items: center; }
+        .step.active { display: block; }
 
-        h1 { color: var(--accent-color); text-transform: uppercase; font-size: 1.2rem; margin-bottom: 20px; }
+        h1 { color: var(--accent-color); text-transform: uppercase; font-size: 1.5rem; margin-bottom: 10px; letter-spacing: 1px; }
 
-        /* Eingabe-Bereich */
-        .category-item { width: 100%; margin-bottom: 15px; text-align: left; }
-        .category-label { display: block; margin-bottom: 5px; font-size: 0.75rem; text-transform: uppercase; opacity: 0.8; }
+        /* Eingabe-Bereich: Grid für Desktop, Liste für Mobile */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .category-item { width: 100%; }
+        .category-label { display: block; margin-bottom: 8px; font-size: 0.8rem; text-transform: uppercase; font-weight: 600; opacity: 0.9; }
         
-        .rating-scale { display: flex; gap: 4px; }
+        .rating-scale { display: flex; gap: 6px; }
         .rating-btn {
-            flex: 1; padding: 12px; border: 1px solid var(--border-color);
+            flex: 1; padding: 15px; border: 1px solid var(--border-color);
             background: var(--rating-bg); color: var(--text-color);
-            border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem;
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem;
+            transition: 0.2s ease;
         }
         .rating-btn.active { background: var(--accent-color); color: #000; border-color: var(--accent-color); }
 
         /* Ergebnis-Bereich */
+        .result-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
         .insult-box {
-            padding: 15px; border: 1px solid var(--accent-color);
-            border-radius: 8px; margin: 15px 0; font-style: italic;
-            color: var(--accent-color); font-size: 0.9rem; line-height: 1.4;
+            padding: 20px; border: 1px solid var(--accent-color);
+            border-radius: 12px; margin: 20px 0; font-style: italic;
+            color: var(--accent-color); font-size: 1.1rem; line-height: 1.5;
+            background: rgba(255, 202, 40, 0.05);
+            width: 100%;
         }
 
         .chart-container {
             width: 100%;
             aspect-ratio: 1 / 1;
-            max-height: 350px;
-            margin: 10px 0;
+            max-width: 450px;
+            margin: 20px 0;
         }
 
         .primary-btn {
             background: var(--accent-color); color: #000; border: none;
-            padding: 16px; border-radius: 8px; font-weight: 800;
-            text-transform: uppercase; width: 100%; cursor: pointer; margin-top: 10px;
+            padding: 18px; border-radius: 10px; font-weight: 900;
+            text-transform: uppercase; width: 100%; max-width: 400px; cursor: pointer; 
+            margin-top: 15px; font-size: 1rem;
         }
 
         .secondary-btn {
             background: transparent; border: 1px solid var(--border-color);
-            color: var(--text-color); padding: 12px; border-radius: 8px;
-            width: 100%; cursor: pointer; margin-top: 10px; font-size: 0.8rem;
+            color: var(--text-color); padding: 14px; border-radius: 10px;
+            width: 100%; max-width: 400px; cursor: pointer; margin-top: 12px; font-size: 0.9rem;
         }
 
-        .legend-mini { font-size: 0.7rem; margin-bottom: 15px; opacity: 0.6; }
+        .legend-mini { font-size: 0.9rem; margin-bottom: 25px; font-weight: bold; color: var(--accent-color); }
     </style>
 </head>
 <body>
@@ -86,22 +106,24 @@
         <!-- SCHRITT 1: EINGABE -->
         <div id="step1" class="step active">
             <h1>Muscle Review 2026</h1>
-            <div class="legend-mini">1 = Lappen | 5 = Mr. Olympia</div>
-            <div id="inputs"></div>
+            <div class="legend-mini">1 = LAPPEN | 5 = MR. OLYMPIA</div>
+            <div id="inputs" class="category-grid"></div>
             <button class="primary-btn" onclick="showResults()">Analyse starten</button>
         </div>
 
         <!-- SCHRITT 2: ERGEBNIS -->
         <div id="step2" class="step">
-            <h1>Dein Versagen</h1>
-            <div id="insult" class="insult-box"></div>
-            
-            <div class="chart-container">
-                <canvas id="muscleChart"></canvas>
-            </div>
+            <div class="result-view">
+                <h1>Dein Versagen</h1>
+                <div id="insult" class="insult-box"></div>
+                
+                <div class="chart-container">
+                    <canvas id="muscleChart"></canvas>
+                </div>
 
-            <button class="primary-btn" onclick="downloadChart()">Als .png speichern</button>
-            <button class="secondary-btn" onclick="location.reload()">Werte korrigieren</button>
+                <button class="primary-btn" onclick="downloadChart()">Als .png speichern</button>
+                <button class="secondary-btn" onclick="location.reload()">Werte korrigieren</button>
+            </div>
         </div>
     </div>
 
@@ -149,6 +171,7 @@
         }
 
         function showResults() {
+            window.scrollTo(0,0);
             document.getElementById('step1').classList.remove('active');
             document.getElementById('step2').classList.add('active');
             document.getElementById('insult').innerText = insults[Math.floor(Math.random() * insults.length)];
@@ -180,7 +203,7 @@
                             ticks: { display: false, stepSize: 1 },
                             grid: { color: 'rgba(255,255,255,0.1)' },
                             angleLines: { color: 'rgba(255,255,255,0.1)' },
-                            pointLabels: { color: '#fff', font: { size: 10 } }
+                            pointLabels: { color: '#fff', font: { size: 11, weight: '600' } }
                         }
                     },
                     plugins: { legend: { display: false } }
@@ -195,30 +218,25 @@
             const originalCanvas = document.getElementById('muscleChart');
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = 600; tempCanvas.height = 750;
+            tempCanvas.width = 800; tempCanvas.height = 900;
             
             tempCtx.fillStyle = '#0d0d0d';
-            tempCtx.fillRect(0, 0, 600, 750);
+            tempCtx.fillRect(0, 0, 800, 900);
 
             tempCtx.fillStyle = '#ffca28';
-            tempCtx.font = 'bold 32px sans-serif';
+            tempCtx.font = 'bold 40px sans-serif';
             tempCtx.textAlign = 'center';
-            tempCtx.fillText('MUSCLE REVIEW 2026', 300, 60);
+            tempCtx.fillText('MUSCLE REVIEW 2026', 400, 80);
 
             tempCtx.fillStyle = '#fff';
-            tempCtx.font = '22px sans-serif';
-            tempCtx.fillText('Athlet: ' + name, 300, 100);
+            tempCtx.font = '24px sans-serif';
+            tempCtx.fillText('Athlet: ' + name, 400, 130);
             
-            tempCtx.font = 'italic 18px sans-serif';
+            tempCtx.font = 'italic 20px sans-serif';
             tempCtx.fillStyle = '#ffca28';
-            const wrapText = (text) => { // Simpler Wrap für lange Sprüche
-                if(text.length > 45) return [text.slice(0, 45) + "-", text.slice(45)];
-                return [text];
-            }
-            const lines = wrapText(document.getElementById('insult').innerText);
-            lines.forEach((l, i) => tempCtx.fillText(l, 300, 140 + (i * 25)));
+            tempCtx.fillText('"' + document.getElementById('insult').innerText + '"', 400, 180);
 
-            tempCtx.drawImage(originalCanvas, 50, 200, 500, 500);
+            tempCtx.drawImage(originalCanvas, 100, 250, 600, 600);
 
             const link = document.createElement('a');
             link.download = `MuscleReview_${name}.png`;
