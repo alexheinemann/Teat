@@ -13,6 +13,7 @@
             --accent-color: #d4af37;
             --border-color: #eeeeee;
             --rating-bg: #f5f5f5;
+            --flash-color: rgba(255, 0, 0, 0.4);
         }
 
         [data-theme="dark"] {
@@ -22,6 +23,7 @@
             --accent-color: #ffca28;
             --border-color: #222222;
             --rating-bg: #1c1c1c;
+            --flash-color: rgba(255, 0, 0, 0.6);
         }
 
         body {
@@ -35,6 +37,7 @@
             padding: 20px;
             box-sizing: border-box;
             transition: background 0.3s ease;
+            overflow-x: hidden;
         }
 
         .container {
@@ -44,15 +47,22 @@
             align-self: center;
         }
 
-        /* Shake Animation */
+        /* ANIMATIONEN */
         @keyframes shake {
             0% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            50% { transform: translateX(8px); }
-            75% { transform: translateX(-8px); }
+            25% { transform: translateX(-12px); }
+            50% { transform: translateX(12px); }
+            75% { transform: translateX(-12px); }
             100% { transform: translateX(0); }
         }
+
+        @keyframes flashRed {
+            0%, 33%, 66%, 100% { background-color: transparent; }
+            15%, 48%, 82% { background-color: var(--flash-color); }
+        }
+
         .shake-effect { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        .flash-effect { animation: flashRed 0.8s ease-in-out; }
 
         .step { display: none; width: 100%; }
         .step.active { display: block; }
@@ -67,7 +77,7 @@
         h1 { 
             color: var(--accent-color); 
             text-transform: uppercase; 
-            font-size: 2.2rem; /* Massivere Headline */
+            font-size: 2.2rem;
             font-weight: 900;
             letter-spacing: -2px;
             margin: 0;
@@ -85,11 +95,10 @@
             text-transform: uppercase;
         }
 
-        /* Mehr Spacing in der Bewertung */
         .category-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: 40px; /* Erhöhtes Spacing */
+            gap: 40px;
             margin-bottom: 50px;
             text-align: left;
         }
@@ -145,13 +154,23 @@
         }
 
         .legend-mini { font-size: 1rem; margin-bottom: 35px; font-weight: bold; opacity: 0.6; }
+        
+        /* Overlay für den Flash-Effekt */
+        #flashOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
     </style>
 </head>
 <body>
 
+    <div id="flashOverlay"></div>
+
     <div class="container" id="mainContainer">
         <div class="header-nav">
-            <div style="width: 80px;"></div> <!-- Spacer -->
+            <div style="width: 80px;"></div>
             <button class="theme-switch" onclick="toggleTheme()">🌓 Mode</button>
         </div>
 
@@ -160,13 +179,13 @@
             <h1>Muscle Review 2026</h1>
             <div class="legend-mini">1 = LAPPEN | 5 = MR. OLYMPIA</div>
             <div id="inputs" class="category-grid"></div>
-            <button class="primary-btn" onclick="showResults()">Analyse starten</button>
+            <button class="primary-btn" onclick="triggerAnalyse()">Analyse starten</button>
         </div>
 
         <!-- SCHRITT 2: ERGEBNIS -->
         <div id="step2" class="step">
             <div class="result-view">
-                <h1 style="font-size: 3rem;">VERSAGEN</h1>
+                <h1>Dein persönliches Versagen</h1>
                 <div id="insult" class="insult-box"></div>
                 
                 <div class="chart-container">
@@ -221,13 +240,27 @@
             btn.classList.add('active');
         }
 
-        function showResults() {
+        function triggerAnalyse() {
             const container = document.getElementById('mainContainer');
+            const overlay = document.getElementById('flashOverlay');
             
-            // Visueller Shake Effekt
+            // 1. Shake
             container.classList.add('shake-effect');
-            setTimeout(() => container.classList.remove('shake-effect'), 400);
+            
+            // 2. Flash (kurz verzögert für maximale Wirkung)
+            setTimeout(() => {
+                overlay.classList.add('flash-effect');
+            }, 100);
 
+            // 3. Seitenwechsel nach Animation
+            setTimeout(() => {
+                showResults();
+                container.classList.remove('shake-effect');
+                overlay.classList.remove('flash-effect');
+            }, 900);
+        }
+
+        function showResults() {
             window.scrollTo(0,0);
             document.getElementById('step1').classList.remove('active');
             document.getElementById('step2').classList.add('active');
@@ -238,7 +271,7 @@
         function initChart() {
             const ctx = document.getElementById('muscleChart').getContext('2d');
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+            const accent = isDark ? '#ffca28' : '#d4af37';
 
             if (myChart) myChart.destroy();
             myChart = new Chart(ctx, {
@@ -247,7 +280,7 @@
                     labels: categories,
                     datasets: [{
                         data: scores,
-                        backgroundColor: 'rgba(212, 175, 55, 0.2)',
+                        backgroundColor: isDark ? 'rgba(255, 202, 40, 0.2)' : 'rgba(212, 175, 55, 0.2)',
                         borderColor: accent,
                         pointBackgroundColor: accent,
                         borderWidth: 3
