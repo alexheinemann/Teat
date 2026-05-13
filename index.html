@@ -17,6 +17,18 @@
             font-family: 'Playfair Display', serif;
             overflow: hidden;
             color: #a6845d;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Alarm-Animation für den Hintergrund */
+        body.alarm-active {
+            animation: alarm-blink 1s infinite;
+        }
+
+        @keyframes alarm-blink {
+            0% { background-color: #1a1a1a; }
+            50% { background-color: rgba(139, 0, 0, 0.4); }
+            100% { background-color: #1a1a1a; }
         }
 
         .container {
@@ -112,8 +124,8 @@
         }
 
         .cta-button:disabled {
-            background-color: #444;
-            color: #888;
+            background-color: #333;
+            color: #ff4444;
             cursor: not-allowed;
             box-shadow: none;
         }
@@ -177,7 +189,7 @@
         </div>
     </div>
 
-    <button class="cta-button" id="evasive-btn">Klick mich</button>
+    <button class="cta-button" id="evasive-btn" onclick="checkLuck()">Klick mich</button>
 
     <script>
         const particleContainer = document.getElementById('particle-container');
@@ -191,6 +203,18 @@
         let escapeCount = 0;
         let isDisabled = false;
 
+        // Neue Funktion: Die Chance auf einen Treffer
+        function checkLuck() {
+            if (isDisabled) return;
+            
+            // 5% Wahrscheinlichkeit, dass man ihn erwischt
+            if (Math.random() < 0.05) {
+                alert("Das hast du ganz ganz toll gemacht!");
+                resetButton();
+                escapeCount = 0;
+            }
+        }
+
         const moveButton = () => {
             if (isDisabled) return;
 
@@ -199,7 +223,6 @@
             
             escapeCount++;
 
-            // Nach 7 Mal ausweichen: Countdown triggern
             if (escapeCount >= 7) {
                 startCooldown();
                 return;
@@ -209,7 +232,7 @@
             
             const btnWidth = evasiveBtn.offsetWidth;
             const btnHeight = evasiveBtn.offsetHeight;
-            const padding = 20;
+            const padding = 25;
 
             const maxW = window.innerWidth - btnWidth - (padding * 2);
             const maxH = window.innerHeight - btnHeight - (padding * 2);
@@ -235,10 +258,13 @@
         const startCooldown = () => {
             isDisabled = true;
             evasiveBtn.disabled = true;
-            escapeCount = 0; // Reset für die nächste Runde
+            escapeCount = 0;
+            
+            // Alarm einschalten
+            document.body.classList.add('alarm-active');
             
             let timeLeft = 10;
-            evasiveBtn.innerText = `Überlastung: ${timeLeft}s`;
+            evasiveBtn.innerText = `ALARM: ${timeLeft}s`;
 
             const countdown = setInterval(() => {
                 timeLeft--;
@@ -247,9 +273,9 @@
                     isDisabled = false;
                     evasiveBtn.disabled = false;
                     evasiveBtn.innerText = "Klick mich";
-                    // Button bleibt stehen, wo er ist, bis er wieder getriggert wird
+                    document.body.classList.remove('alarm-active');
                 } else {
-                    evasiveBtn.innerText = `Überlastung: ${timeLeft}s`;
+                    evasiveBtn.innerText = `ALARM: ${timeLeft}s`;
                 }
             }, 1000);
         };
@@ -264,10 +290,20 @@
             evasiveBtn.style.transform = "translateX(-50%)";
         };
 
-        evasiveBtn.addEventListener('mouseover', moveButton);
+        // Desktop: Mouseover triggert das Weglaufen
+        evasiveBtn.addEventListener('mouseover', (e) => {
+            // Nur weglaufen, wenn der Zufall nicht gerade einen Treffer zulässt
+            // Wir lassen hier eine kleine Verzögerung, damit man theoretisch klicken könnte
+            if (!isDisabled) moveButton();
+        });
+
+        // Mobile: Touchstart triggert das Weglaufen
         evasiveBtn.addEventListener('touchstart', (e) => {
-            if (!isDisabled) e.preventDefault();
-            moveButton();
+            if (!isDisabled) {
+                // Wir verhindern hier das Standardverhalten nicht sofort,
+                // damit das onclick-Event (checkLuck) eventuell noch feuern kann
+                moveButton();
+            }
         });
 
         function triggerEffect(element) {
