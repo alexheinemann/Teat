@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gehaltsgespräche Simulator</title>
     <style>
         :root {
@@ -14,93 +14,120 @@
             --input-bg: #333333;
         }
 
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
+            margin: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+            height: 100dvh; 
+            overflow: hidden;
         }
 
         .chat-container {
             width: 100%;
-            max-width: 500px;
-            height: 600px;
-            background-color: var(--panel-color);
-            border-radius: 12px;
+            max-width: 600px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid #333;
+            background-color: var(--panel-color);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
         /* Header */
         .header {
-            padding: 20px;
+            padding: 15px;
             border-bottom: 1px solid var(--accent-color);
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
+            background-color: var(--bg-color);
         }
 
-        .boss-icon {
-            font-size: 30px;
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background: #333;
-            padding: 10px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            border: 1px solid var(--accent-color);
+            border: 2px solid var(--accent-color);
+            position: relative;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .money-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            font-size: 16px;
         }
 
         h1 {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin: 0;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--accent-color);
+            font-weight: 800;
         }
 
         /* Chat Area */
         #chat-window {
             flex-grow: 1;
-            padding: 20px;
+            padding: 15px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
+            background-image: linear-gradient(to bottom, #262626, #1a1a1a);
         }
 
         .message {
             max-width: 85%;
             padding: 12px 16px;
-            border-radius: 8px;
+            border-radius: 12px;
             line-height: 1.4;
             font-size: 0.95rem;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .boss-msg {
             align-self: flex-start;
             background-color: #333;
-            border-left: 3px solid var(--accent-color);
+            border-left: 4px solid var(--accent-color);
+            border-bottom-left-radius: 2px;
         }
 
         .user-msg {
             align-self: flex-end;
             background-color: var(--accent-color);
             color: #000;
-            font-weight: 500;
+            font-weight: 600;
+            border-bottom-right-radius: 2px;
         }
 
         /* Input Area */
         .input-area {
-            padding: 20px;
+            padding: 15px;
+            padding-bottom: env(safe-area-inset-bottom, 15px);
             background-color: #202020;
             display: flex;
             gap: 10px;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
+            border-top: 1px solid #333;
         }
 
         input {
@@ -108,9 +135,11 @@
             background-color: var(--input-bg);
             border: 1px solid #444;
             color: white;
-            padding: 12px;
-            border-radius: 6px;
+            padding: 14px;
+            border-radius: 10px;
             outline: none;
+            /* 16px verhindert iOS Auto-Zoom */
+            font-size: 16px; 
         }
 
         input:focus {
@@ -121,27 +150,37 @@
             background-color: var(--accent-color);
             color: black;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 0 20px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: bold;
-            transition: opacity 0.2s;
+            font-size: 13px;
+            text-transform: uppercase;
+            transition: transform 0.1s;
         }
 
-        button:hover {
-            opacity: 0.8;
+        button:active {
+            transform: scale(0.95);
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+        /* Custom Scrollbar */
+        #chat-window::-webkit-scrollbar {
+            width: 4px;
+        }
+        #chat-window::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
 
 <div class="chat-container">
     <div class="header">
-        <div class="boss-icon">😡</div>
+        <div class="logo-wrapper">
+            <span id="boss-emoji">😡</span>
+            <span class="money-badge">💰</span>
+        </div>
         <h1>Gehaltsgespräche Simulator</h1>
     </div>
 
@@ -151,53 +190,87 @@
     </div>
 
     <div class="input-area">
-        <input type="text" id="user-input" placeholder="Ihre Argumente..." onkeypress="if(event.key === 'Enter') sendMessage()">
-        <button onclick="sendMessage()">Senden</button>
+        <input type="text" id="user-input" placeholder="Argument..." autocomplete="off">
+        <button id="send-btn">Senden</button>
     </div>
 </div>
 
 <script>
+    const input = document.getElementById('user-input');
+    const chatWindow = document.getElementById('chat-window');
+    const sendBtn = document.getElementById('send-btn');
+    const bossEmoji = document.getElementById('boss-emoji');
+
     const bossResponses = [
         "In der aktuellen wirtschaftlichen Lage? Seien Sie froh, dass der Kaffee in der Küche noch gratis ist.",
-        "Leistung ist eine Grundvoraussetzung, kein Bonus-Grund. Was haben Sie denn *wirklich* geleistet?",
+        "Leistung ist eine Grundvoraussetzung, kein Bonus-Grund. Was haben Sie denn wirklich geleistet?",
         "Ich habe mir Ihre Zahlen angesehen. Mein Neffe macht das in den Schulferien effizienter.",
         "Andere Mitarbeiter in Ihrer Position fragen nach mehr Arbeit, nicht nach mehr Geld.",
         "Wir müssen den Gürtel enger schnallen. Ich musste mir dieses Jahr auch einen gebrauchten Zweitwagen kaufen.",
         "Gehaltserhöhung? Ich dachte, Sie sind wegen der 'familiären Atmosphäre' hier.",
         "Kommen Sie in sechs Monaten wieder. Vielleicht haben wir dann ein Budget für Bleistifte.",
-        "Das ist eine sehr... kreative Forderung. Aber wir sind hier nicht bei Wünsch-dir-was."
+        "Haben Sie eigentlich eine Vorstellung davon, was Sie die Firma an Sozialabgaben kosten?",
+        "Ich sehe hier nur Dienst nach Vorschrift. Wo ist das 'Extra-Meile'-Gen?",
+        "Das Budget wurde gerade erst für die neue Teambuilding-Finca auf Mallorca aufgebraucht."
+    ];
+
+    const fakeOuts = [
+        "Wissen Sie was? Sie haben recht. Das war überfällig. Ich werde Ihnen... HAHAHAHA! Nein, im Ernst, glauben Sie das wirklich? Gehen Sie wieder an die Arbeit.",
+        "Ein sehr gutes Argument. Ich schlage vor, wir erhöhen Ihr... HAHA! ROFL! 'Erhöhen'... der war gut. Ich erhöhe höchstens den Druck auf Ihre Abteilung.",
+        "Sie beeindrucken mich. Sagen wir 15% mehr? ... HAHAHA! Ihr Gesicht! Gold wert! Das landet direkt in der Führungskräfte-WhatsApp-Gruppe. Raus jetzt.",
+        "Ich habe heute einen guten Tag. Ich unterschreibe das sofort. Geben Sie mir den Zettel... *reißt imaginäres Papier* ...HAHAHA! Träumen Sie weiter!"
     ];
 
     function sendMessage() {
-        const input = document.getElementById('user-input');
-        const chatWindow = document.getElementById('chat-window');
-        
-        if (input.value.trim() === "") return;
+        const text = input.value.trim();
+        if (text === "") return;
 
         // User Nachricht hinzufügen
         const userDiv = document.createElement('div');
         userDiv.className = 'message user-msg';
-        userDiv.textContent = input.value;
+        userDiv.textContent = text;
         chatWindow.appendChild(userDiv);
-
-        const currentInput = input.value;
+        
         input.value = "";
-
-        // Scroll nach unten
         chatWindow.scrollTop = chatWindow.scrollHeight;
 
-        // "Chef" antwortet verzögert
+        // Boss Reaktion verzögert
         setTimeout(() => {
             const bossDiv = document.createElement('div');
             bossDiv.className = 'message boss-msg';
             
-            // Zufällige unfreundliche Antwort
-            bossDiv.textContent = bossResponses[Math.floor(Math.random() * bossResponses.length)];
-            
+            // Logik: 25% Chance auf Fake-Out (Lachanfall)
+            const isFakeOut = Math.random() < 0.25;
+            let response;
+
+            if (isFakeOut) {
+                response = fakeOuts[Math.floor(Math.random() * fakeOuts.length)];
+                bossEmoji.textContent = "😂"; // Icon ändert sich kurz zu lachend
+                setTimeout(() => { bossEmoji.textContent = "😡"; }, 3000);
+            } else {
+                // Keyword-Checks
+                const lowerText = text.toLowerCase();
+                if(lowerText.includes("inflation")) {
+                    response = "Inflation betrifft uns alle! Meine Yacht-Liegegebühren sind auch um 20% gestiegen. Jammern hilft nicht.";
+                } else if(lowerText.includes("überstunden") || lowerText.includes("fleiß")) {
+                    response = "Überstunden sind ein Zeichen von schlechtem Zeitmanagement Ihrerseits. Warum sollte ich Ineffizienz belohnen?";
+                } else if(lowerText.includes("kündig")) {
+                    response = "Reisende soll man nicht aufhalten. Ich habe hier 50 Bewerbungen für Ihren Posten liegen. Alle günstiger.";
+                } else {
+                    response = bossResponses[Math.floor(Math.random() * bossResponses.length)];
+                }
+            }
+
+            bossDiv.textContent = response;
             chatWindow.appendChild(bossDiv);
             chatWindow.scrollTop = chatWindow.scrollHeight;
-        }, 800);
+        }, 700);
     }
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
 </script>
 
 </body>
