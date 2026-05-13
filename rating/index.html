@@ -7,12 +7,21 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-color: #0d0d0d;
-            --card-bg: #1a1a1a;
-            --text-color: #f1f2f6;
+            --bg-color: #ffffff;
+            --card-bg: #fcfcfc;
+            --text-color: #1a1a1a;
+            --accent-color: #d4af37;
+            --border-color: #eeeeee;
+            --rating-bg: #f5f5f5;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0a0a0a;
+            --card-bg: #141414;
+            --text-color: #ffffff;
             --accent-color: #ffca28;
-            --border-color: #333;
-            --rating-bg: #2d3436;
+            --border-color: #222222;
+            --rating-bg: #1c1c1c;
         }
 
         body {
@@ -23,8 +32,9 @@
             display: flex;
             justify-content: center;
             min-height: 100vh;
-            padding: 15px;
+            padding: 20px;
             box-sizing: border-box;
+            transition: background 0.3s ease;
         }
 
         .container {
@@ -34,26 +44,72 @@
             align-self: center;
         }
 
+        /* Shake Animation */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+            75% { transform: translateX(-8px); }
+            100% { transform: translateX(0); }
+        }
+        .shake-effect { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+
         .step { display: none; width: 100%; }
         .step.active { display: block; }
 
-        h1 { color: var(--accent-color); text-transform: uppercase; font-size: 1.3rem; margin-bottom: 8px; letter-spacing: 1px; }
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
 
+        h1 { 
+            color: var(--accent-color); 
+            text-transform: uppercase; 
+            font-size: 2.2rem; /* Massivere Headline */
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin: 0;
+        }
+
+        .theme-switch {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Mehr Spacing in der Bewertung */
         .category-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 40px; /* Erhöhtes Spacing */
+            margin-bottom: 50px;
             text-align: left;
         }
 
-        .category-label { display: block; margin-bottom: 6px; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; opacity: 0.8; }
+        .category-label { 
+            display: block; 
+            margin-bottom: 12px; 
+            font-size: 0.85rem; 
+            text-transform: uppercase; 
+            font-weight: 700; 
+            letter-spacing: 0.05em;
+            opacity: 0.9; 
+        }
         
-        .rating-scale { display: flex; gap: 5px; }
+        .rating-scale { display: flex; gap: 8px; }
         .rating-btn {
-            flex: 1; padding: 12px; border: 1px solid var(--border-color);
+            flex: 1; padding: 18px; border: 1px solid var(--border-color);
             background: var(--rating-bg); color: var(--text-color);
-            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem;
+            border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 1.1rem;
+            transition: all 0.2s ease;
         }
         .rating-btn.active { background: var(--accent-color); color: #000; border-color: var(--accent-color); }
 
@@ -61,50 +117,45 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
         }
 
         .insult-box {
-            padding: 12px 20px; 
-            border: 1px solid var(--accent-color);
-            border-radius: 10px; 
-            margin: 10px 0; 
-            font-style: italic;
-            color: var(--accent-color); 
-            font-size: 0.95rem; 
-            line-height: 1.4;
-            background: rgba(255, 202, 40, 0.05);
-            width: 90%; 
-            box-sizing: border-box;
+            padding: 20px; border: 1px solid var(--accent-color);
+            border-radius: 12px; margin: 20px 0; font-style: italic;
+            color: var(--accent-color); font-size: 1.1rem; line-height: 1.5;
+            background: rgba(212, 175, 55, 0.05);
+            width: 95%;
         }
 
-        .chart-container {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            max-width: 380px; 
-            margin: 10px 0;
-        }
+        .chart-container { width: 100%; aspect-ratio: 1/1; max-width: 450px; margin: 20px 0; }
 
         .primary-btn {
             background: var(--accent-color); color: #000; border: none;
-            padding: 16px; border-radius: 10px; font-weight: 900;
-            text-transform: uppercase; width: 100%; max-width: 380px; cursor: pointer; 
-            margin-top: 10px; font-size: 0.95rem;
+            padding: 20px; border-radius: 12px; font-weight: 900;
+            text-transform: uppercase; width: 100%; max-width: 400px; cursor: pointer; 
+            margin-top: 15px; font-size: 1rem; letter-spacing: 1px;
         }
 
         .secondary-btn {
             background: transparent; border: 1px solid var(--border-color);
-            color: var(--text-color); padding: 12px; border-radius: 10px;
-            width: 100%; max-width: 380px; cursor: pointer; margin-top: 8px; font-size: 0.85rem;
+            color: var(--text-color); padding: 14px; border-radius: 12px;
+            width: 100%; max-width: 400px; cursor: pointer; margin-top: 12px; font-size: 0.8rem;
         }
 
-        .legend-mini { font-size: 0.8rem; margin-bottom: 20px; font-weight: bold; color: var(--accent-color); opacity: 0.7; }
+        .legend-mini { font-size: 1rem; margin-bottom: 35px; font-weight: bold; opacity: 0.6; }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" id="mainContainer">
+        <div class="header-nav">
+            <div style="width: 80px;"></div> <!-- Spacer -->
+            <button class="theme-switch" onclick="toggleTheme()">🌓 Mode</button>
+        </div>
+
+        <!-- SCHRITT 1: EINGABE -->
         <div id="step1" class="step active">
             <h1>Muscle Review 2026</h1>
             <div class="legend-mini">1 = LAPPEN | 5 = MR. OLYMPIA</div>
@@ -112,9 +163,10 @@
             <button class="primary-btn" onclick="showResults()">Analyse starten</button>
         </div>
 
+        <!-- SCHRITT 2: ERGEBNIS -->
         <div id="step2" class="step">
             <div class="result-view">
-                <h1>Dein Versagen</h1>
+                <h1 style="font-size: 3rem;">VERSAGEN</h1>
                 <div id="insult" class="insult-box"></div>
                 
                 <div class="chart-container">
@@ -170,10 +222,11 @@
         }
 
         function showResults() {
-            // VIBRATION hinzufügen (200ms)
-            if (navigator.vibrate) {
-                navigator.vibrate(200);
-            }
+            const container = document.getElementById('mainContainer');
+            
+            // Visueller Shake Effekt
+            container.classList.add('shake-effect');
+            setTimeout(() => container.classList.remove('shake-effect'), 400);
 
             window.scrollTo(0,0);
             document.getElementById('step1').classList.remove('active');
@@ -184,18 +237,20 @@
 
         function initChart() {
             const ctx = document.getElementById('muscleChart').getContext('2d');
-            if (myChart) myChart.destroy();
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
 
+            if (myChart) myChart.destroy();
             myChart = new Chart(ctx, {
                 type: 'radar',
                 data: {
                     labels: categories,
                     datasets: [{
                         data: scores,
-                        backgroundColor: 'rgba(255, 202, 40, 0.2)',
-                        borderColor: '#ffca28',
-                        pointBackgroundColor: '#ffca28',
-                        borderWidth: 2
+                        backgroundColor: 'rgba(212, 175, 55, 0.2)',
+                        borderColor: accent,
+                        pointBackgroundColor: accent,
+                        borderWidth: 3
                     }]
                 },
                 options: {
@@ -205,9 +260,9 @@
                         r: {
                             min: 0, max: 5,
                             ticks: { display: false, stepSize: 1 },
-                            grid: { color: 'rgba(255,255,255,0.1)' },
-                            angleLines: { color: 'rgba(255,255,255,0.1)' },
-                            pointLabels: { color: '#fff', font: { size: 10, weight: '600' } }
+                            grid: { color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
+                            angleLines: { color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
+                            pointLabels: { color: isDark ? '#fff' : '#1a1a1a', font: { size: 11, weight: '700' } }
                         }
                     },
                     plugins: { legend: { display: false } }
@@ -215,35 +270,34 @@
             });
         }
 
+        function toggleTheme() {
+            const body = document.documentElement;
+            const newTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            if (myChart) initChart();
+        }
+
         function downloadChart() {
             const name = prompt("Name des Athleten:", "Lappen");
             if (!name) return;
-            
             const originalCanvas = document.getElementById('muscleChart');
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = 800; tempCanvas.height = 950;
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             
-            tempCtx.fillStyle = '#0d0d0d';
-            tempCtx.fillRect(0, 0, 800, 950);
-
-            tempCtx.fillStyle = '#ffca28';
-            tempCtx.font = 'bold 40px sans-serif';
+            tempCanvas.width = 800; tempCanvas.height = 1000;
+            tempCtx.fillStyle = isDark ? '#0a0a0a' : '#ffffff';
+            tempCtx.fillRect(0, 0, 800, 1000);
+            tempCtx.fillStyle = isDark ? '#ffca28' : '#d4af37';
+            tempCtx.font = '900 50px sans-serif';
             tempCtx.textAlign = 'center';
-            tempCtx.fillText('MUSCLE REVIEW 2026', 400, 80);
-
-            tempCtx.fillStyle = '#fff';
-            tempCtx.font = '24px sans-serif';
-            tempCtx.fillText('Athlet: ' + name, 400, 130);
-            
-            tempCtx.font = 'italic 20px sans-serif';
-            tempCtx.fillStyle = '#ffca28';
-            tempCtx.fillText('"' + document.getElementById('insult').innerText + '"', 400, 180);
-
-            tempCtx.drawImage(originalCanvas, 100, 280, 600, 600);
-
+            tempCtx.fillText('MUSCLE REVIEW 2026', 400, 100);
+            tempCtx.fillStyle = isDark ? '#fff' : '#1a1a1a';
+            tempCtx.font = '30px sans-serif';
+            tempCtx.fillText('Athlet: ' + name, 400, 160);
+            tempCtx.drawImage(originalCanvas, 100, 300, 600, 600);
             const link = document.createElement('a');
-            link.download = `MuscleReview_${name}.png`;
+            link.download = `Review_${name}.png`;
             link.href = tempCanvas.toDataURL();
             link.click();
         }
