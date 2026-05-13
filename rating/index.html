@@ -3,157 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bodybuilding Review Tool</title>
+    <title>Muscle Review 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2d3436;
+            --accent-color: #0984e3;
+            --border-color: #dfe6e9;
+            --rating-bg: #f1f2f6;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1e272e;
+            --card-bg: #2f3542;
+            --text-color: #f1f2f6;
+            --accent-color: #74b9ff;
+            --border-color: #57606f;
+            --rating-bg: #3d4451;
+        }
+
         body {
             font-family: 'Inter', -apple-system, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
             padding: 40px 20px;
-            color: #333;
+            transition: all 0.3s ease;
         }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1000px;
+            margin: 0 auto 30px auto;
+        }
+
+        /* Dark Mode Switch */
+        .theme-switch {
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
         .container {
-            background: white;
+            background: var(--card-bg);
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            max-width: 800px;
-            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin: 0 auto;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            gap: 40px;
         }
-        @media (max-width: 768px) {
+
+        @media (max-width: 900px) {
             .container { grid-template-columns: 1fr; }
         }
-        h1 { margin-bottom: 20px; font-weight: 300; }
-        .input-section div { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-size: 0.9em; color: #666; }
-        select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            background: #fff;
+
+        .category-item {
+            margin-bottom: 20px;
         }
-        .chart-section {
+
+        .category-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        /* Rating Scale Style */
+        .rating-scale {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            gap: 5px;
+        }
+
+        .rating-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: var(--rating-bg);
+            color: var(--text-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .rating-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .chart-container {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
         }
     </style>
 </head>
 <body>
 
-    <h1>Bodybuilding Review</h1>
+    <div class="header">
+        <h1>Muscle Review 2026</h1>
+        <button class="theme-switch" onclick="toggleTheme()">🌓 Mode wechseln</button>
+    </div>
 
     <div class="container">
         <!-- Input Bereich -->
-        <div class="input-section">
-            <div>
-                <label>Bankdrücken (Kraftwert)</label>
-                <select class="score" data-index="0">
-                    <option value="1">1 - Anfänger</option>
-                    <option value="2">2 - Fortgeschritten</option>
-                    <option value="3">3 - Erfahren</option>
-                    <option value="4">4 - Elite</option>
-                    <option value="5">5 - Weltklasse</option>
-                </select>
-            </div>
-            <div>
-                <label>Bizepsumfang (Volumen)</label>
-                <select class="score" data-index="1">
-                    <option value="1">1 - < 30cm</option>
-                    <option value="2">2 - 30-35cm</option>
-                    <option value="3">3 - 35-40cm</option>
-                    <option value="4">4 - 40-45cm</option>
-                    <option value="5">5 - > 45cm</option>
-                </select>
-            </div>
-            <div>
-                <label>Pump & Vaskularität</label>
-                <select class="score" data-index="2">
-                    <option value="1">1 - Flach</option>
-                    <option value="2">2 - Durchschnittlich</option>
-                    <option value="3">3 - Gut</option>
-                    <option value="4">4 - Prall</option>
-                    <option value="5">5 - Extrem</option>
-                </select>
-            </div>
-            <div>
-                <label>Körperfettanteil (Definition)</label>
-                <select class="score" data-index="3">
-                    <option value="1">1 - > 25%</option>
-                    <option value="2">2 - 20-25%</option>
-                    <option value="3">3 - 15-20%</option>
-                    <option value="4">4 - 10-15%</option>
-                    <option value="5">5 - < 10%</option>
-                </select>
-            </div>
-            <div>
-                <label>Beintraining (Disziplin)</label>
-                <select class="score" data-index="4">
-                    <option value="1">1 - Skipped</option>
-                    <option value="2">2 - Selten</option>
-                    <option value="3">3 - Regelmäßig</option>
-                    <option value="4">4 - Intensiv</option>
-                    <option value="5">5 - Platzangst in der Jeans</option>
-                </select>
-            </div>
+        <div id="inputs" class="input-section">
+            <!-- Kategorien werden via JS eingefügt -->
         </div>
 
         <!-- Chart Bereich -->
-        <div class="chart-section">
-            <canvas id="myChart"></canvas>
+        <div class="chart-container">
+            <canvas id="muscleChart"></canvas>
         </div>
     </div>
 
     <script>
-        const ctx = document.getElementById('myChart').getContext('2d');
-        const labels = ['Bankdrücken', 'Bizeps', 'Pump', 'Definition', 'Beine'];
-        let dataValues = [1, 1, 1, 1, 1];
+        const categories = [
+            'Bankdrücken', 'Kniebeugen', 'Kreuzheben', 
+            'Bizepsumfang', 'Schulterbreite', 'Waden',
+            'Definition (KFA)', 'Vaskularität', 'Pumpgefühl', 'Regeneration'
+        ];
 
-        const myChart = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Aktueller Stand',
-                    data: dataValues,
-                    fill: true,
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgb(54, 162, 235)',
-                    pointBackgroundColor: 'rgb(54, 162, 235)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgb(54, 162, 235)'
-                }]
-            },
-            options: {
-                scales: {
-                    r: {
-                        angleLines: { display: true },
-                        suggestedMin: 0,
-                        suggestedMax: 5,
-                        ticks: { stepSize: 1 }
-                    }
+        let scores = new Array(categories.length).fill(1);
+        let myChart;
+
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.documentElement;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            updateChartTheme(newTheme);
+        }
+
+        // UI Generierung
+        const inputContainer = document.getElementById('inputs');
+        categories.forEach((cat, index) => {
+            const div = document.createElement('div');
+            div.className = 'category-item';
+            div.innerHTML = `
+                <span class="category-label">${cat}</span>
+                <div class="rating-scale" data-cat="${index}">
+                    ${[1,2,3,4,5].map(num => `<button class="rating-btn ${num===1?'active':''}" onclick="setScore(${index}, ${num}, this)">${num}</button>`).join('')}
+                </div>
+            `;
+            inputContainer.appendChild(div);
+        });
+
+        function setScore(catIndex, value, btn) {
+            scores[catIndex] = value;
+            
+            // UI Button Status Update
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Chart Update
+            myChart.data.datasets[0].data = scores;
+            myChart.update();
+        }
+
+        function initChart(theme = 'light') {
+            const ctx = document.getElementById('muscleChart').getContext('2d');
+            const isDark = theme === 'dark';
+            
+            myChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        label: 'Dein Profil',
+                        data: scores,
+                        backgroundColor: 'rgba(9, 132, 227, 0.2)',
+                        borderColor: '#0984e3',
+                        pointBackgroundColor: '#0984e3',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 5,
+                            ticks: { display: false, stepSize: 1 },
+                            grid: { color: isDark ? '#57606f' : '#dfe6e9' },
+                            angleLines: { color: isDark ? '#57606f' : '#dfe6e9' },
+                            pointLabels: {
+                                color: isDark ? '#f1f2f6' : '#2d3436',
+                                font: { size: 12, weight: '600' }
+                            }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
                 }
-            }
-        });
-
-        // Event Listener für die Dropdowns
-        document.querySelectorAll('.score').forEach(select => {
-            select.addEventListener('change', (e) => {
-                const index = e.target.getAttribute('data-index');
-                const value = parseInt(e.target.value);
-                
-                myChart.data.datasets[0].data[index] = value;
-                myChart.update();
             });
-        });
+        }
+
+        function updateChartTheme(theme) {
+            const isDark = theme === 'dark';
+            myChart.options.scales.r.grid.color = isDark ? '#57606f' : '#dfe6e9';
+            myChart.options.scales.r.angleLines.color = isDark ? '#57606f' : '#dfe6e9';
+            myChart.options.scales.r.pointLabels.color = isDark ? '#f1f2f6' : '#2d3436';
+            myChart.update();
+        }
+
+        initChart();
     </script>
 </body>
 </html>
