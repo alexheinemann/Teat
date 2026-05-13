@@ -12,84 +12,92 @@
             --text-color: #000000;
             --accent-color: #000000;
             --border-color: #eeeeee;
-            --rating-bg: #f9f9f9;
+            --rating-bg: #f5f5f5;
         }
 
         [data-theme="dark"] {
             --bg-color: #0a0a0a;
-            --card-bg: #0a0a0a;
+            --card-bg: #111111;
             --text-color: #ffffff;
             --accent-color: #ffffff;
             --border-color: #222222;
-            --rating-bg: #151515;
+            --rating-bg: #1c1c1c;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
             padding: 40px 20px;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
         }
 
-        .header-section {
-            max-width: 1200px;
-            margin: 0 auto 40px auto;
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            max-width: 1100px;
+            margin: 0 auto 40px auto;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 20px;
         }
 
         h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1.4rem;
+            font-weight: 800;
             letter-spacing: -0.03em;
             margin: 0;
+            text-transform: uppercase;
         }
 
         .theme-switch {
             cursor: pointer;
-            background: var(--rating-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
             padding: 8px 16px;
             border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 600;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 0.75em;
+            font-weight: bold;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .main-container {
-            max-width: 1200px;
+        .container {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            max-width: 1100px;
             margin: 0 auto;
             display: grid;
             grid-template-columns: 400px 1fr;
             gap: 60px;
         }
 
-        @media (max-width: 1000px) {
-            .main-container { grid-template-columns: 1fr; }
+        @media (max-width: 950px) {
+            .container { grid-template-columns: 1fr; }
+            .chart-container { order: -1; position: relative; top: 0; height: 400px; }
         }
 
         .category-item {
-            margin-bottom: 25px;
+            margin-bottom: 24px;
         }
 
         .category-label {
             display: block;
             margin-bottom: 10px;
-            font-size: 0.8rem;
             font-weight: 600;
+            font-size: 0.8em;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            opacity: 0.8;
         }
 
         .rating-scale {
             display: flex;
-            gap: 5px;
+            gap: 6px;
         }
 
         .rating-btn {
@@ -100,8 +108,8 @@
             color: var(--text-color);
             border-radius: 4px;
             cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 700;
         }
 
         .rating-btn.active {
@@ -110,10 +118,10 @@
             border-color: var(--accent-color);
         }
 
-        .chart-wrapper {
+        .chart-container {
             position: sticky;
             top: 40px;
-            height: 600px; /* Große Darstellung */
+            height: 550px; /* Deutlich größere Grafik */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -127,17 +135,16 @@
 </head>
 <body>
 
-    <div class="header-section">
+    <div class="header">
         <h1>Muscle Review 2026</h1>
-        <button class="theme-switch" onclick="toggleTheme()">Mode Wechseln</button>
+        <button class="theme-switch" onclick="toggleTheme()">🌓 Mode wechseln</button>
     </div>
 
-    <div class="main-container">
-        <!-- Linke Seite: Bewertung -->
-        <div id="inputs" class="input-section"></div>
+    <div class="container">
+        <div id="inputs" class="input-section">
+            </div>
 
-        <!-- Rechte Seite: Grafik -->
-        <div class="chart-wrapper">
+        <div class="chart-container">
             <canvas id="muscleChart"></canvas>
         </div>
     </div>
@@ -145,8 +152,8 @@
     <script>
         const categories = [
             'Bankdrücken', 'Kniebeugen', 'Kreuzheben', 
-            'Bizepsumfang', 'Schulterbreite', 'Wadenvolumen',
-            'Definition (KFA)', 'Vaskularität', 'Pump Effekt', 'Regeneration'
+            'Bizepsumfang', 'Schulterbreite', 'Waden',
+            'Definition (KFA)', 'Vaskularität', 'Pumpgefühl', 'Regeneration'
         ];
 
         let scores = new Array(categories.length).fill(1);
@@ -154,7 +161,8 @@
 
         function toggleTheme() {
             const body = document.documentElement;
-            const newTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             body.setAttribute('data-theme', newTheme);
             updateChartTheme(newTheme);
         }
@@ -165,7 +173,7 @@
             div.className = 'category-item';
             div.innerHTML = `
                 <span class="category-label">${cat}</span>
-                <div class="rating-scale">
+                <div class="rating-scale" data-cat="${index}">
                     ${[1,2,3,4,5].map(num => `<button class="rating-btn ${num===1?'active':''}" onclick="setScore(${index}, ${num}, this)">${num}</button>`).join('')}
                 </div>
             `;
@@ -181,20 +189,22 @@
             myChart.update();
         }
 
-        function initChart() {
+        function initChart(theme = 'light') {
             const ctx = document.getElementById('muscleChart').getContext('2d');
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const isDark = theme === 'dark';
             
             myChart = new Chart(ctx, {
                 type: 'radar',
                 data: {
                     labels: categories,
                     datasets: [{
+                        label: 'Dein Profil',
                         data: scores,
-                        backgroundColor: 'rgba(150, 150, 150, 0.2)',
-                        borderColor: '#888888',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#888888'
+                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                        borderColor: isDark ? '#ffffff' : '#000000',
+                        pointBackgroundColor: isDark ? '#ffffff' : '#000000',
+                        borderWidth: 1.5,
+                        pointRadius: 3
                     }]
                 },
                 options: {
@@ -205,11 +215,11 @@
                             min: 0,
                             max: 5,
                             ticks: { display: false, stepSize: 1 },
-                            grid: { color: isDark ? '#333' : '#eee' },
-                            angleLines: { color: isDark ? '#333' : '#eee' },
+                            grid: { color: isDark ? '#333333' : '#eeeeee' },
+                            angleLines: { color: isDark ? '#333333' : '#eeeeee' },
                             pointLabels: {
                                 color: isDark ? '#ffffff' : '#000000',
-                                font: { size: 12, weight: '600' }
+                                font: { size: 11, weight: '500', family: 'Inter' }
                             }
                         }
                     },
@@ -220,8 +230,11 @@
 
         function updateChartTheme(theme) {
             const isDark = theme === 'dark';
-            myChart.options.scales.r.grid.color = isDark ? '#333' : '#eee';
-            myChart.options.scales.r.angleLines.color = isDark ? '#333' : '#eee';
+            myChart.data.datasets[0].backgroundColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+            myChart.data.datasets[0].borderColor = isDark ? '#ffffff' : '#000000';
+            myChart.data.datasets[0].pointBackgroundColor = isDark ? '#ffffff' : '#000000';
+            myChart.options.scales.r.grid.color = isDark ? '#333333' : '#eeeeee';
+            myChart.options.scales.r.angleLines.color = isDark ? '#333333' : '#eeeeee';
             myChart.options.scales.r.pointLabels.color = isDark ? '#ffffff' : '#000000';
             myChart.update();
         }
