@@ -7,21 +7,23 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-color: #ffffff;
+            /* Light Mode: Anthrazit & Gold */
+            --bg-color: #f4f4f4;
             --card-bg: #ffffff;
-            --text-color: #000000;
-            --accent-color: #000000;
-            --border-color: #eeeeee;
-            --rating-bg: #f5f5f5;
+            --text-color: #2c3e50; /* Anthrazit */
+            --accent-color: #d4af37; /* Gold */
+            --border-color: #dcdde1;
+            --rating-bg: #f1f2f6;
         }
 
         [data-theme="dark"] {
-            --bg-color: #0a0a0a;
-            --card-bg: #111111;
-            --text-color: #ffffff;
-            --accent-color: #ffffff;
-            --border-color: #222222;
-            --rating-bg: #1c1c1c;
+            /* Dark Mode: Tiefes Anthrazit & Gold */
+            --bg-color: #1a1a1a;
+            --card-bg: #2d3436;
+            --text-color: #f1f2f6;
+            --accent-color: #ffca28; /* Helleres Gold für Kontrast */
+            --border-color: #444;
+            --rating-bg: #3d4451;
         }
 
         body {
@@ -39,24 +41,21 @@
             align-items: center;
             max-width: 1100px;
             margin: 0 auto 30px auto;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 20px;
         }
 
         h1 {
-            font-size: 1.4rem;
-            font-weight: 800;
-            letter-spacing: -0.03em;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+            color: var(--accent-color);
             margin: 0;
-            text-transform: uppercase;
         }
 
         .theme-switch {
             cursor: pointer;
             padding: 8px 15px;
-            border-radius: 4px;
+            border-radius: 20px;
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--accent-color);
             color: var(--text-color);
             font-size: 0.8em;
             font-weight: bold;
@@ -65,37 +64,28 @@
         .container {
             background: var(--card-bg);
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             max-width: 1100px;
             margin: 0 auto;
             display: grid;
             grid-template-columns: 400px 1fr;
             gap: 40px;
-            border: 1px solid var(--border-color);
         }
 
         @media (max-width: 900px) {
             .container { grid-template-columns: 1fr; }
         }
 
-        .category-item {
-            margin-bottom: 20px;
-        }
-
+        .category-item { margin-bottom: 20px; }
         .category-label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            font-size: 0.8em;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            font-size: 0.9em;
         }
 
-        .rating-scale {
-            display: flex;
-            gap: 5px;
-        }
+        .rating-scale { display: flex; gap: 5px; }
 
         .rating-btn {
             flex: 1;
@@ -103,7 +93,7 @@
             border: 1px solid var(--border-color);
             background: var(--rating-bg);
             color: var(--text-color);
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
             font-weight: bold;
@@ -111,23 +101,37 @@
 
         .rating-btn.active {
             background: var(--accent-color);
-            color: var(--bg-color);
+            color: #000;
             border-color: var(--accent-color);
         }
 
-        .chart-container {
+        .chart-side {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             position: sticky;
             top: 20px;
-            height: 550px; /* Deutlich vergrößert */
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            height: fit-content;
         }
 
-        canvas {
-            width: 100% !important;
-            height: 100% !important;
+        .chart-container {
+            width: 100%;
+            height: 500px;
+            margin-bottom: 20px;
         }
+
+        .download-btn {
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .download-btn:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
@@ -138,14 +142,15 @@
     </div>
 
     <div class="container">
-        <!-- Input Bereich -->
         <div id="inputs" class="input-section">
             <!-- Kategorien via JS -->
         </div>
 
-        <!-- Chart Bereich -->
-        <div class="chart-container">
-            <canvas id="muscleChart"></canvas>
+        <div class="chart-side">
+            <div class="chart-container">
+                <canvas id="muscleChart"></canvas>
+            </div>
+            <button class="download-btn" onclick="downloadChart()">Als .png speichern</button>
         </div>
     </div>
 
@@ -161,8 +166,7 @@
 
         function toggleTheme() {
             const body = document.documentElement;
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            const newTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             body.setAttribute('data-theme', newTheme);
             updateChartTheme(newTheme);
         }
@@ -173,7 +177,7 @@
             div.className = 'category-item';
             div.innerHTML = `
                 <span class="category-label">${cat}</span>
-                <div class="rating-scale" data-cat="${index}">
+                <div class="rating-scale">
                     ${[1,2,3,4,5].map(num => `<button class="rating-btn ${num===1?'active':''}" onclick="setScore(${index}, ${num}, this)">${num}</button>`).join('')}
                 </div>
             `;
@@ -192,18 +196,19 @@
         function initChart(theme = 'light') {
             const ctx = document.getElementById('muscleChart').getContext('2d');
             const isDark = theme === 'dark';
+            const gold = isDark ? '#ffca28' : '#d4af37';
             
             myChart = new Chart(ctx, {
                 type: 'radar',
                 data: {
                     labels: categories,
                     datasets: [{
-                        label: 'Dein Profil',
+                        label: 'Muscle Review 2026',
                         data: scores,
-                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-                        borderColor: isDark ? '#ffffff' : '#000000',
-                        pointBackgroundColor: isDark ? '#ffffff' : '#000000',
-                        borderWidth: 1.5
+                        backgroundColor: isDark ? 'rgba(255, 202, 40, 0.2)' : 'rgba(212, 175, 55, 0.2)',
+                        borderColor: gold,
+                        pointBackgroundColor: gold,
+                        borderWidth: 2
                     }]
                 },
                 options: {
@@ -214,11 +219,11 @@
                             min: 0,
                             max: 5,
                             ticks: { display: false, stepSize: 1 },
-                            grid: { color: isDark ? '#333333' : '#eeeeee' },
-                            angleLines: { color: isDark ? '#333333' : '#eeeeee' },
+                            grid: { color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
+                            angleLines: { color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' },
                             pointLabels: {
-                                color: isDark ? '#ffffff' : '#000000',
-                                font: { size: 11, weight: '600', family: 'Inter' }
+                                color: isDark ? '#f1f2f6' : '#2c3e50',
+                                font: { size: 12, weight: '600' }
                             }
                         }
                     },
@@ -229,12 +234,42 @@
 
         function updateChartTheme(theme) {
             const isDark = theme === 'dark';
-            myChart.options.scales.r.grid.color = isDark ? '#333333' : '#eeeeee';
-            myChart.options.scales.r.angleLines.color = isDark ? '#333333' : '#eeeeee';
-            myChart.options.scales.r.pointLabels.color = isDark ? '#ffffff' : '#000000';
-            myChart.data.datasets[0].borderColor = isDark ? '#ffffff' : '#000000';
-            myChart.data.datasets[0].backgroundColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+            const gold = isDark ? '#ffca28' : '#d4af37';
+            myChart.data.datasets[0].borderColor = gold;
+            myChart.data.datasets[0].pointBackgroundColor = gold;
+            myChart.options.scales.r.grid.color = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+            myChart.options.scales.r.pointLabels.color = isDark ? '#f1f2f6' : '#2c3e50';
             myChart.update();
+        }
+
+        function downloadChart() {
+            // Hilfs-Canvas erstellen, um Hintergrund & Headline mitzuspeichern
+            const originalCanvas = document.getElementById('muscleChart');
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            tempCanvas.width = originalCanvas.width;
+            tempCanvas.height = originalCanvas.height + 60; // Platz für Headline
+
+            // Hintergrundfarbe (entsprechend dem Theme)
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            tempCtx.fillStyle = isDark ? '#1a1a1a' : '#ffffff';
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+            // Headline zeichnen
+            tempCtx.fillStyle = isDark ? '#ffca28' : '#d4af37';
+            tempCtx.font = 'bold 24px Inter, sans-serif';
+            tempCtx.textAlign = 'center';
+            tempCtx.fillText('Muscle Review 2026', tempCanvas.width / 2, 40);
+
+            // Die eigentliche Chart darauf zeichnen
+            tempCtx.drawImage(originalCanvas, 0, 60);
+
+            // Download Link erzeugen
+            const link = document.createElement('a');
+            link.download = 'muscle-review-2026.png';
+            link.href = tempCanvas.toDataURL('image/png');
+            link.click();
         }
 
         initChart();
