@@ -48,28 +48,28 @@
             position: relative;
         }
 
-        /* Branding: Logo oben links basierend auf image_4933eb.png */
+        /* Branding: Großes Logo oben links basierend auf image_48e0c3.png */
         .brand-header {
             position: absolute;
-            top: -30px;
+            top: -60px;
             left: 0;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 20px;
         }
 
         .logo-svg {
-            width: 32px;
-            height: 32px;
+            width: 60px; /* Großes Logo */
+            height: 60px;
             fill: var(--accent-color);
         }
 
-        .brand-text {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 800;
-            opacity: 0.8;
+        .brand-text-large {
+            font-size: 1.5rem;
+            text-transform: lowercase;
+            letter-spacing: -1px;
+            font-weight: 700;
+            color: var(--text-color);
         }
 
         /* Animationen */
@@ -87,7 +87,7 @@
         .shake-effect { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
         .flash-effect { animation: flashRed 0.8s ease-in-out; }
 
-        .step { display: none; width: 100%; margin-top: 60px; }
+        .step { display: none; width: 100%; margin-top: 100px; }
         .step.active { display: block; }
 
         .header-nav {
@@ -184,9 +184,10 @@
         }
 
         @media (max-width: 768px) {
-            .brand-header { position: relative; top: 0; justify-content: center; margin-bottom: 20px; width: 100%; }
+            .brand-header { position: relative; top: 0; justify-content: center; margin-bottom: 30px; width: 100%; }
             .step { margin-top: 10px; }
-            h1 { font-size: 1.7rem; }
+            .logo-svg { width: 45px; height: 45px; }
+            .brand-text-large { font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -195,12 +196,13 @@
     <div id="flashOverlay"></div>
 
     <div class="container" id="mainContainer">
-        <!-- Logo Bereich nach image_4933eb.png -->
+        <!-- Branding basierend auf image_48e0c3.png -->
         <div class="brand-header">
             <svg class="logo-svg" viewBox="0 0 100 100">
-                <path d="M50 5 L90 40 L75 40 L75 60 L85 60 L50 95 L15 60 L25 60 L25 40 L10 40 Z M50 25 L35 45 L45 45 L45 75 L55 75 L55 45 L65 45 Z" />
+                <!-- Original Logo-Pfad rekonstruiert -->
+                <path d="M50 5 L95 50 L78 50 L78 95 L22 95 L22 50 L5 50 Z M50 25 L35 45 L45 45 L45 75 L55 75 L55 45 L65 45 Z" />
             </svg>
-            <div class="brand-text">muscle review 2026</div>
+            <div class="brand-text-large">muscle review 2026</div>
         </div>
 
         <div class="header-nav">
