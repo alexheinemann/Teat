@@ -1,21 +1,12 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Muscle Review 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-color: #f4f4f4;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --accent-color: #d4af37;
-            --border-color: #dcdde1;
-            --rating-bg: #f1f2f6;
-        }
-
-        [data-theme="dark"] {
             --bg-color: #0d0d0d;
             --card-bg: #1a1a1a;
             --text-color: #f1f2f6;
@@ -25,155 +16,113 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 40px 20px;
-            transition: all 0.3s ease;
-        }
-
-        .header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            max-width: 1000px;
-            margin: 0 auto 30px auto;
+            min-height: 100vh;
         }
-
-        h1 { color: var(--accent-color); text-transform: uppercase; letter-spacing: -1px; margin: 0; }
 
         .container {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 1000px;
-            margin: 0 auto;
-            min-height: 500px;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
         }
 
-        /* Schritt-Steuerung */
-        .step { display: none; }
-        .step.active { display: block; }
+        .step { display: none; width: 100%; }
+        .step.active { display: flex; flex-direction: column; align-items: center; }
 
-        .legend-box {
-            background: var(--rating-bg);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8em;
-            font-weight: bold;
-            border-left: 4px solid var(--accent-color);
-        }
+        h1 { color: var(--accent-color); text-transform: uppercase; font-size: 1.2rem; margin-bottom: 20px; }
 
-        .category-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 700px) { .category-grid { grid-template-columns: 1fr; } }
-
-        .category-label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85em; }
+        /* Eingabe-Bereich */
+        .category-item { width: 100%; margin-bottom: 15px; text-align: left; }
+        .category-label { display: block; margin-bottom: 5px; font-size: 0.75rem; text-transform: uppercase; opacity: 0.8; }
+        
         .rating-scale { display: flex; gap: 4px; }
         .rating-btn {
-            flex: 1; padding: 10px; border: 1px solid var(--border-color);
+            flex: 1; padding: 12px; border: 1px solid var(--border-color);
             background: var(--rating-bg); color: var(--text-color);
-            border-radius: 4px; cursor: pointer; font-weight: bold;
+            border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem;
         }
         .rating-btn.active { background: var(--accent-color); color: #000; border-color: var(--accent-color); }
 
-        /* Analyse Seite */
-        .result-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            align-items: center;
-        }
-
+        /* Ergebnis-Bereich */
         .insult-box {
-            padding: 20px;
-            border: 1px dashed var(--accent-color);
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-style: italic;
-            color: var(--accent-color);
-            font-weight: 500;
+            padding: 15px; border: 1px solid var(--accent-color);
+            border-radius: 8px; margin: 15px 0; font-style: italic;
+            color: var(--accent-color); font-size: 0.9rem; line-height: 1.4;
         }
 
-        .chart-container { height: 400px; width: 100%; }
+        .chart-container {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-height: 350px;
+            margin: 10px 0;
+        }
 
         .primary-btn {
-            background: var(--accent-color);
-            color: #000; border: none; padding: 15px 30px;
-            border-radius: 8px; font-weight: 800; cursor: pointer;
-            text-transform: uppercase; width: 100%; margin-top: 20px;
+            background: var(--accent-color); color: #000; border: none;
+            padding: 16px; border-radius: 8px; font-weight: 800;
+            text-transform: uppercase; width: 100%; cursor: pointer; margin-top: 10px;
         }
 
         .secondary-btn {
             background: transparent; border: 1px solid var(--border-color);
-            color: var(--text-color); padding: 10px; border-radius: 8px;
-            cursor: pointer; margin-top: 10px; width: 100%;
+            color: var(--text-color); padding: 12px; border-radius: 8px;
+            width: 100%; cursor: pointer; margin-top: 10px; font-size: 0.8rem;
         }
+
+        .legend-mini { font-size: 0.7rem; margin-bottom: 15px; opacity: 0.6; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Muscle Review 2026</h1>
-        <button onclick="toggleTheme()" class="rating-btn" style="flex:none; width:auto;">🌓 Mode</button>
-    </div>
-
     <div class="container">
         <!-- SCHRITT 1: EINGABE -->
         <div id="step1" class="step active">
-            <div class="legend-box">
-                <span>1 = Lappen</span>
-                <span>← DEINE REALITÄT →</span>
-                <span>5 = Mr. Olympia</span>
-            </div>
-            <div id="inputs" class="category-grid"></div>
-            <button class="primary-btn" onclick="showResults()">Analyse starten (auf eigene Gefahr)</button>
+            <h1>Muscle Review 2026</h1>
+            <div class="legend-mini">1 = Lappen | 5 = Mr. Olympia</div>
+            <div id="inputs"></div>
+            <button class="primary-btn" onclick="showResults()">Analyse starten</button>
         </div>
 
         <!-- SCHRITT 2: ERGEBNIS -->
         <div id="step2" class="step">
-            <div class="result-layout">
-                <div>
-                    <h3>Deine "Leistung"</h3>
-                    <div id="insult" class="insult-box"></div>
-                    <p>Zusammenfassend lässt sich sagen: Hör auf Ausreden zu suchen und geh endlich wieder richtig trainieren.</p>
-                    <button class="primary-btn" onclick="downloadChart()">Als .png speichern</button>
-                    <button class="secondary-btn" onclick="location.reload()">Neue Bewertung</button>
-                </div>
-                <div class="chart-container">
-                    <canvas id="muscleChart"></canvas>
-                </div>
+            <h1>Dein Versagen</h1>
+            <div id="insult" class="insult-box"></div>
+            
+            <div class="chart-container">
+                <canvas id="muscleChart"></canvas>
             </div>
+
+            <button class="primary-btn" onclick="downloadChart()">Als .png speichern</button>
+            <button class="secondary-btn" onclick="location.reload()">Werte korrigieren</button>
         </div>
     </div>
 
     <script>
         const categories = [
-            'Bankdrücken', 'Kniebeugen', 'Kreuzheben', 'Bizepsumfang', 
-            'Schulterbreite', 'Waden', 'Definition (KFA)', 'Vaskularität', 
-            'Pumpgefühl', 'Regeneration'
+            'Bankdrücken', 'Kniebeugen', 'Kreuzheben', 'Bizeps', 
+            'Schulter', 'Waden', 'Definition', 'Vaskularität', 
+            'Pump', 'Regeneration'
         ];
 
         const insults = [
-            "Das Spinnennetz sieht eher aus wie ein Hilferuf.",
-            "Physik ist keine Meinung – du musst einfach schwerer trainieren.",
-            "Dein Bizeps hat die Vaskularität eines Toastbrots. Mehr Gewicht!",
-            "Süß, dass du das Training nennst. Andere nennen das Aufwärmen.",
-            "Die Grafik lügt nicht, aber deine Selbsteinschätzung vermutlich schon. Ab ins Gym.",
-            "Herzlichen Glückwunsch zu dieser stabilen Mittelmäßigkeit. Nicht.",
-            "Bist du sicher, dass du Hanteln hebst oder sortierst du sie nur?",
-            "Dieses Review schreit förmlich nach Disziplinlosigkeit. Beweg dich.",
-            "Selbst meine KI-Algorithmen haben mehr Muskeltonus als diese Werte.",
-            "Schönes Netz. Würde gut als Untersetzer für deinen Proteinshake taugen, den du offensichtlich umsonst trinkst."
+            "Dein Trainingsplan ist wohl eher ein Malbuch. Geh endlich schwer trainieren.",
+            "Physikalisches Gesetz: Wo kein Widerstand, da kein Muskel. Fang mal damit an.",
+            "Dein Körperbau erinnert an ein dezent geformtes Stück Weißbrot. Mehr Eisen!",
+            "Süß, dass du das Sport nennst. Ich nenne es 'Stehen mit Gewichten'.",
+            "Die Grafik sieht aus wie ein verhungertes Spinnennetz. Geh pumpen.",
+            "Bist du im Gym zum Trainieren oder um die Klimaanlage zu testen?",
+            "Deine Vaskularität ist so vorhanden wie deine Disziplin: Gar nicht.",
+            "Glückwunsch zum stabilsten Lappen-Status 2026. Beweg deinen Arsch.",
+            "Das Einzige, was hier massiv ist, ist deine Ignoranz gegenüber schweren Sätzen.",
+            "Stopp die Ausreden. Fang an zu fressen und zu heben. Mehr trainieren!"
         ];
 
         let scores = new Array(categories.length).fill(1);
@@ -183,6 +132,7 @@
         const inputContainer = document.getElementById('inputs');
         categories.forEach((cat, index) => {
             const div = document.createElement('div');
+            div.className = 'category-item';
             div.innerHTML = `
                 <span class="category-label">${cat}</span>
                 <div class="rating-scale">
@@ -201,18 +151,12 @@
         function showResults() {
             document.getElementById('step1').classList.remove('active');
             document.getElementById('step2').classList.add('active');
-            
-            // Zufällige Beleidigung
             document.getElementById('insult').innerText = insults[Math.floor(Math.random() * insults.length)];
-            
-            initChart(document.documentElement.getAttribute('data-theme') || 'light');
+            initChart();
         }
 
-        function initChart(theme) {
+        function initChart() {
             const ctx = document.getElementById('muscleChart').getContext('2d');
-            const isDark = theme === 'dark';
-            const gold = isDark ? '#ffca28' : '#d4af37';
-
             if (myChart) myChart.destroy();
 
             myChart = new Chart(ctx, {
@@ -221,19 +165,22 @@
                     labels: categories,
                     datasets: [{
                         data: scores,
-                        backgroundColor: 'rgba(212, 175, 55, 0.2)',
-                        borderColor: gold,
-                        pointBackgroundColor: gold,
+                        backgroundColor: 'rgba(255, 202, 40, 0.2)',
+                        borderColor: '#ffca28',
+                        pointBackgroundColor: '#ffca28',
                         borderWidth: 2
                     }]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         r: {
-                            min: 0, max: 5, ticks: { display: false, stepSize: 1 },
-                            grid: { color: isDark ? '#333' : '#eee' },
-                            pointLabels: { color: isDark ? '#fff' : '#000', font: { size: 10 } }
+                            min: 0, max: 5,
+                            ticks: { display: false, stepSize: 1 },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            angleLines: { color: 'rgba(255,255,255,0.1)' },
+                            pointLabels: { color: '#fff', font: { size: 10 } }
                         }
                     },
                     plugins: { legend: { display: false } }
@@ -241,42 +188,40 @@
             });
         }
 
-        function toggleTheme() {
-            const body = document.documentElement;
-            const newTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            body.setAttribute('data-theme', newTheme);
-            if (myChart) initChart(newTheme);
-        }
-
         function downloadChart() {
-            const name = prompt("Name für dein Versagen angeben:", "Lappen");
+            const name = prompt("Name des Athleten:", "Lappen");
             if (!name) return;
             
             const originalCanvas = document.getElementById('muscleChart');
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = 600; tempCanvas.height = 700;
+            tempCanvas.width = 600; tempCanvas.height = 750;
             
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            tempCtx.fillStyle = isDark ? '#0d0d0d' : '#ffffff';
-            tempCtx.fillRect(0, 0, 600, 700);
+            tempCtx.fillStyle = '#0d0d0d';
+            tempCtx.fillRect(0, 0, 600, 750);
 
-            tempCtx.fillStyle = isDark ? '#ffca28' : '#d4af37';
-            tempCtx.font = 'bold 30px sans-serif';
+            tempCtx.fillStyle = '#ffca28';
+            tempCtx.font = 'bold 32px sans-serif';
             tempCtx.textAlign = 'center';
             tempCtx.fillText('MUSCLE REVIEW 2026', 300, 60);
 
-            tempCtx.fillStyle = isDark ? '#ffffff' : '#333';
-            tempCtx.font = '20px sans-serif';
+            tempCtx.fillStyle = '#fff';
+            tempCtx.font = '22px sans-serif';
             tempCtx.fillText('Athlet: ' + name, 300, 100);
             
-            tempCtx.font = 'italic 16px sans-serif';
-            tempCtx.fillText('"' + document.getElementById('insult').innerText + '"', 300, 140);
+            tempCtx.font = 'italic 18px sans-serif';
+            tempCtx.fillStyle = '#ffca28';
+            const wrapText = (text) => { // Simpler Wrap für lange Sprüche
+                if(text.length > 45) return [text.slice(0, 45) + "-", text.slice(45)];
+                return [text];
+            }
+            const lines = wrapText(document.getElementById('insult').innerText);
+            lines.forEach((l, i) => tempCtx.fillText(l, 300, 140 + (i * 25)));
 
-            tempCtx.drawImage(originalCanvas, 50, 180, 500, 500);
+            tempCtx.drawImage(originalCanvas, 50, 200, 500, 500);
 
             const link = document.createElement('a');
-            link.download = `Review_${name}.png`;
+            link.download = `MuscleReview_${name}.png`;
             link.href = tempCanvas.toDataURL();
             link.click();
         }
