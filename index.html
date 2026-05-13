@@ -20,7 +20,6 @@
             transition: background-color 0.3s ease;
         }
 
-        /* Alarm-Animation für den Hintergrund */
         body.alarm-active {
             animation: alarm-blink 1s infinite;
         }
@@ -189,7 +188,7 @@
         </div>
     </div>
 
-    <button class="cta-button" id="evasive-btn" onclick="checkLuck()">Klick mich</button>
+    <button class="cta-button" id="evasive-btn" onclick="checkClickCount()">Klick mich</button>
 
     <script>
         const particleContainer = document.getElementById('particle-container');
@@ -200,15 +199,17 @@
         const evasiveBtn = document.getElementById('evasive-btn');
         let inactivityTimer;
         let baitTimer;
-        let escapeCount = 0;
+        let escapeCount = 0; // Zähler für den Alarm (7 Mal weglaufen)
+        let totalInteractions = 0; // Globaler Zähler für das 13er-Event
         let isDisabled = false;
 
-        // Neue Funktion: Die Chance auf einen Treffer
-        function checkLuck() {
+        // Neue Logik: Erfolg bei jedem 13. Versuch
+        function checkClickCount() {
             if (isDisabled) return;
             
-            // 5% Wahrscheinlichkeit, dass man ihn erwischt
-            if (Math.random() < 0.05) {
+            totalInteractions++;
+
+            if (totalInteractions % 13 === 0) {
                 alert("Das hast du ganz ganz toll gemacht!");
                 resetButton();
                 escapeCount = 0;
@@ -223,6 +224,7 @@
             
             escapeCount++;
 
+            // Alarm-Check (bei 7 Mal weglaufen ohne Treffer)
             if (escapeCount >= 7) {
                 startCooldown();
                 return;
@@ -260,7 +262,6 @@
             evasiveBtn.disabled = true;
             escapeCount = 0;
             
-            // Alarm einschalten
             document.body.classList.add('alarm-active');
             
             let timeLeft = 10;
@@ -290,18 +291,14 @@
             evasiveBtn.style.transform = "translateX(-50%)";
         };
 
-        // Desktop: Mouseover triggert das Weglaufen
-        evasiveBtn.addEventListener('mouseover', (e) => {
-            // Nur weglaufen, wenn der Zufall nicht gerade einen Treffer zulässt
-            // Wir lassen hier eine kleine Verzögerung, damit man theoretisch klicken könnte
+        evasiveBtn.addEventListener('mouseover', () => {
             if (!isDisabled) moveButton();
         });
 
-        // Mobile: Touchstart triggert das Weglaufen
         evasiveBtn.addEventListener('touchstart', (e) => {
             if (!isDisabled) {
-                // Wir verhindern hier das Standardverhalten nicht sofort,
-                // damit das onclick-Event (checkLuck) eventuell noch feuern kann
+                // Bei Touch müssen wir moveButton triggern, 
+                // aber checkClickCount wird über das onclick-Event des HTML Elements gefeuert.
                 moveButton();
             }
         });
