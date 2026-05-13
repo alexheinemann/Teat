@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gehaltsgespräche Simulator</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --panel-color: #262626;
+            --accent-color: #d4af37; /* Gold */
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --input-bg: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            height: 600px;
+            background-color: var(--panel-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            border-bottom: 1px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .boss-icon {
+            font-size: 30px;
+            background: #333;
+            padding: 10px;
+            border-radius: 50%;
+            border: 1px solid var(--accent-color);
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-color);
+        }
+
+        /* Chat Area */
+        #chat-window {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            line-height: 1.4;
+            font-size: 0.95rem;
+        }
+
+        .boss-msg {
+            align-self: flex-start;
+            background-color: #333;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .user-msg {
+            align-self: flex-end;
+            background-color: var(--accent-color);
+            color: #000;
+            font-weight: 500;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            background-color: #202020;
+            display: flex;
+            gap: 10px;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        input {
+            flex-grow: 1;
+            background-color: var(--input-bg);
+            border: 1px solid #444;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="header">
+        <div class="boss-icon">😡</div>
+        <h1>Gehaltsgespräche Simulator</h1>
+    </div>
+
+    <div id="chat-window">
+        <!-- Startnachricht -->
+        <div class="message boss-msg">Sie müssen schon mit mir reden!</div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Ihre Argumente..." onkeypress="if(event.key === 'Enter') sendMessage()">
+        <button onclick="sendMessage()">Senden</button>
+    </div>
+</div>
+
+<script>
+    const bossResponses = [
+        "In der aktuellen wirtschaftlichen Lage? Seien Sie froh, dass der Kaffee in der Küche noch gratis ist.",
+        "Leistung ist eine Grundvoraussetzung, kein Bonus-Grund. Was haben Sie denn *wirklich* geleistet?",
+        "Ich habe mir Ihre Zahlen angesehen. Mein Neffe macht das in den Schulferien effizienter.",
+        "Andere Mitarbeiter in Ihrer Position fragen nach mehr Arbeit, nicht nach mehr Geld.",
+        "Wir müssen den Gürtel enger schnallen. Ich musste mir dieses Jahr auch einen gebrauchten Zweitwagen kaufen.",
+        "Gehaltserhöhung? Ich dachte, Sie sind wegen der 'familiären Atmosphäre' hier.",
+        "Kommen Sie in sechs Monaten wieder. Vielleicht haben wir dann ein Budget für Bleistifte.",
+        "Das ist eine sehr... kreative Forderung. Aber wir sind hier nicht bei Wünsch-dir-was."
+    ];
+
+    function sendMessage() {
+        const input = document.getElementById('user-input');
+        const chatWindow = document.getElementById('chat-window');
+        
+        if (input.value.trim() === "") return;
+
+        // User Nachricht hinzufügen
+        const userDiv = document.createElement('div');
+        userDiv.className = 'message user-msg';
+        userDiv.textContent = input.value;
+        chatWindow.appendChild(userDiv);
+
+        const currentInput = input.value;
+        input.value = "";
+
+        // Scroll nach unten
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+
+        // "Chef" antwortet verzögert
+        setTimeout(() => {
+            const bossDiv = document.createElement('div');
+            bossDiv.className = 'message boss-msg';
+            
+            // Zufällige unfreundliche Antwort
+            bossDiv.textContent = bossResponses[Math.floor(Math.random() * bossResponses.length)];
+            
+            chatWindow.appendChild(bossDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }, 800);
+    }
+</script>
+
+</body>
+</html>
