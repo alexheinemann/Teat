@@ -48,12 +48,12 @@
             position: relative;
         }
 
-        /* Zentriertes Branding oben */
+        /* Branding: Zentriertes Logo oben basierend auf Code_Generated_Image.png */
         .brand-box {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
         }
 
         .logo-svg {
@@ -64,11 +64,11 @@
         }
 
         .brand-subtext {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            font-weight: 800;
-            opacity: 0.8;
+            font-size: 0.8rem;
+            text-transform: lowercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            opacity: 0.9;
         }
 
         /* Animationen */
@@ -110,7 +110,7 @@
         h1 { 
             color: var(--accent-color); 
             text-transform: uppercase; 
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             font-weight: 900;
             letter-spacing: -2px;
             margin: 0 0 40px 0;
@@ -184,7 +184,6 @@
 
         @media (max-width: 768px) {
             h1 { font-size: 1.8rem; }
-            .logo-svg { width: 60px; height: 60px; }
         }
     </style>
 </head>
@@ -193,10 +192,10 @@
     <div id="flashOverlay"></div>
 
     <div class="container" id="mainContainer">
-        <!-- Zentrales Logo oben basierend auf image_48d91a.png -->
+        <!-- Zentriertes Logo oben basierend auf Code_Generated_Image.png -->
         <div class="brand-box">
             <svg class="logo-svg" viewBox="0 0 100 100">
-                <path d="M50 5 L95 50 L75 50 L75 95 L25 95 L25 50 L5 50 Z M50 22 L35 45 L45 45 L45 78 L55 78 L55 45 L65 45 Z" />
+                <path d="M20 20 L20 80 L80 80 M35 55 L65 25" fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--accent-color);"/>
             </svg>
             <div class="brand-subtext">liftsome</div>
         </div>
