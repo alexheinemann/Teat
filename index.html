@@ -20,14 +20,14 @@
             transition: background-color 0.3s ease;
         }
 
+        /* Extremer Alarm-Zustand */
         body.alarm-active {
-            animation: alarm-blink 1s infinite;
+            animation: extreme-alarm 0.4s infinite alternate;
         }
 
-        @keyframes alarm-blink {
+        @keyframes extreme-alarm {
             0% { background-color: #1a1a1a; }
-            50% { background-color: rgba(139, 0, 0, 0.4); }
-            100% { background-color: #1a1a1a; }
+            100% { background-color: rgba(255, 0, 0, 0.3); }
         }
 
         .container {
@@ -123,10 +123,17 @@
         }
 
         .cta-button:disabled {
-            background-color: #333;
-            color: #ff4444;
+            background-color: #000;
+            color: #ff0000;
             cursor: not-allowed;
-            box-shadow: none;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            border: 1px solid #ff0000;
+            animation: button-shake 0.1s infinite;
+        }
+
+        @keyframes button-shake {
+            0% { transform: translate(-2px, 0); }
+            100% { transform: translate(2px, 0); }
         }
 
         #particle-container {
@@ -199,16 +206,13 @@
         const evasiveBtn = document.getElementById('evasive-btn');
         let inactivityTimer;
         let baitTimer;
-        let escapeCount = 0; // Zähler für den Alarm (7 Mal weglaufen)
-        let totalInteractions = 0; // Globaler Zähler für das 13er-Event
+        let escapeCount = 0;
+        let totalInteractions = 0;
         let isDisabled = false;
 
-        // Neue Logik: Erfolg bei jedem 13. Versuch
         function checkClickCount() {
             if (isDisabled) return;
-            
             totalInteractions++;
-
             if (totalInteractions % 13 === 0) {
                 alert("Das hast du ganz ganz toll gemacht!");
                 resetButton();
@@ -224,7 +228,6 @@
             
             escapeCount++;
 
-            // Alarm-Check (bei 7 Mal weglaufen ohne Treffer)
             if (escapeCount >= 7) {
                 startCooldown();
                 return;
@@ -265,7 +268,7 @@
             document.body.classList.add('alarm-active');
             
             let timeLeft = 10;
-            evasiveBtn.innerText = `ALARM: ${timeLeft}s`;
+            evasiveBtn.innerText = `Zwangspause: ${timeLeft}s`;
 
             const countdown = setInterval(() => {
                 timeLeft--;
@@ -276,7 +279,7 @@
                     evasiveBtn.innerText = "Klick mich";
                     document.body.classList.remove('alarm-active');
                 } else {
-                    evasiveBtn.innerText = `ALARM: ${timeLeft}s`;
+                    evasiveBtn.innerText = `Zwangspause: ${timeLeft}s`;
                 }
             }, 1000);
         };
@@ -297,8 +300,6 @@
 
         evasiveBtn.addEventListener('touchstart', (e) => {
             if (!isDisabled) {
-                // Bei Touch müssen wir moveButton triggern, 
-                // aber checkClickCount wird über das onclick-Event des HTML Elements gefeuert.
                 moveButton();
             }
         });
