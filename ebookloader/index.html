@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Projekt Gutenberg eBook-loader</title>
     
+    <!-- Nur noch Inter für den Fließtext laden -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400..800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -59,12 +60,26 @@
             gap: 12px;
         }
 
-        h1 {
-            font-family: 'Bodoni Moda', serif;
+        /* Neue Avenir Next Typografie für Headlines */
+        h1, h2, .book-info h3 {
+            font-family: 'Avenir Next', Avenir, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 700;
             color: var(--heading-color);
             margin: 0;
-            font-size: 2.2rem;
             letter-spacing: -0.02em;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+        }
+
+        .book-info h3 {
+            font-size: 1.4rem;
+            margin: 0 0 6px 0;
         }
 
         .action-btn {
@@ -90,7 +105,6 @@
             border-color: var(--accent-color);
         }
 
-        /* Filter Tabs */
         .filter-tabs {
             display: flex;
             gap: 10px;
@@ -115,7 +129,6 @@
             border-color: var(--accent-color);
         }
 
-        /* Suchbereich */
         .search-wrapper {
             margin-bottom: 40px;
         }
@@ -160,9 +173,8 @@
             background-color: var(--accent-hover);
         }
 
-        /* Kissing Spinner Animation */
         .kissing-spinner {
-            display: none; /* Wird per JS auf flex gesetzt */
+            display: none;
             justify-content: center;
             align-items: center;
             margin: 40px auto;
@@ -201,7 +213,6 @@
             100% { transform: translateX(-20px) scale(1.1); border-radius: 30% 50% 50% 30%; }
         }
 
-        /* Buch-Karten */
         .book-card {
             background: var(--card-bg);
             padding: 20px;
@@ -232,18 +243,17 @@
             flex: 1;
         }
 
-        .book-info h3 {
-            margin: 0 0 6px 0;
-            color: var(--heading-color);
-            font-family: 'Bodoni Moda', serif;
-            font-size: 1.4rem;
-        }
-
         .book-info p {
             margin: 0 0 12px 0;
             color: var(--text-color);
             opacity: 0.8;
             font-size: 14px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .download-btn {
@@ -258,19 +268,21 @@
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
         }
 
-        .download-btn:hover {
+        .download-btn:hover:not(:disabled) {
             background-color: var(--accent-color);
             color: var(--btn-text);
         }
 
         .download-btn:disabled {
             opacity: 0.5;
-            cursor: not-allowed;
+            cursor: default;
+            border-color: var(--border-color);
+            color: var(--text-color);
         }
 
         .no-cover-placeholder {
@@ -324,6 +336,12 @@
                 width: 120px;
                 height: 180px;
             }
+            .btn-group {
+                width: 100%;
+            }
+            .download-btn {
+                flex: 1;
+            }
         }
     </style>
 </head>
@@ -351,7 +369,6 @@
             </div>
         </div>
 
-        <!-- Der neue Kissing Spinner -->
         <div class="kissing-spinner" id="loadingSpinner">
             <div class="kiss-dot left"></div>
             <div class="kiss-dot right"></div>
@@ -362,7 +379,7 @@
 
     <div id="libraryView">
         <div class="library-header">
-            <h2 style="font-family: 'Bodoni Moda', serif; margin: 0; color: var(--heading-color);">Meine geladenen eBooks</h2>
+            <h2>Meine geladenen eBooks</h2>
         </div>
         <div id="libraryResults"></div>
     </div>
@@ -528,6 +545,9 @@
             infoDiv.appendChild(title);
             infoDiv.appendChild(author);
 
+            const btnGroup = document.createElement('div');
+            btnGroup.className = 'btn-group';
+
             const downloadBtn = document.createElement('button');
             downloadBtn.className = 'download-btn';
             
@@ -545,25 +565,47 @@
                 removeBtn.className = 'download-btn';
                 removeBtn.style.borderColor = '#E74C3C';
                 removeBtn.style.color = '#E74C3C';
-                removeBtn.style.marginLeft = '10px';
                 removeBtn.textContent = 'Entfernen';
                 removeBtn.onclick = () => removeFromLibrary(book.id);
                 
-                infoDiv.appendChild(downloadBtn);
-                infoDiv.appendChild(removeBtn);
+                btnGroup.appendChild(downloadBtn);
+                btnGroup.appendChild(removeBtn);
             } else {
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'download-btn';
+                
+                const isSaved = library.find(b => b.id === book.id);
+                if (isSaved) {
+                    saveBtn.textContent = 'In Bibliothek';
+                    saveBtn.disabled = true;
+                } else {
+                    saveBtn.textContent = '+ Bibliothek';
+                    saveBtn.onclick = () => {
+                        saveToLibrary(book);
+                        saveBtn.textContent = 'In Bibliothek';
+                        saveBtn.disabled = true;
+                    };
+                }
+
                 downloadBtn.textContent = 'EPUB Laden';
                 downloadBtn.onclick = async () => {
+                    // Beim Download auch direkt speichern
                     saveToLibrary(book);
+                    saveBtn.textContent = 'In Bibliothek';
+                    saveBtn.disabled = true;
+
                     downloadBtn.textContent = 'Lädt...';
                     downloadBtn.disabled = true;
                     await downloadEpubFile(book.epubLink, book.title);
                     downloadBtn.textContent = 'EPUB Laden';
                     downloadBtn.disabled = false;
                 };
-                infoDiv.appendChild(downloadBtn);
+                
+                btnGroup.appendChild(downloadBtn);
+                btnGroup.appendChild(saveBtn);
             }
 
+            infoDiv.appendChild(btnGroup);
             card.appendChild(infoDiv);
             return card;
         }
