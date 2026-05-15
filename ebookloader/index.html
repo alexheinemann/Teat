@@ -54,6 +54,11 @@
             margin-bottom: 30px;
         }
 
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
         h1 {
             font-family: 'Bodoni Moda', serif;
             color: var(--heading-color);
@@ -62,7 +67,7 @@
             letter-spacing: -0.02em;
         }
 
-        .theme-switch {
+        .action-btn {
             background: none;
             border: 1px solid var(--border-color);
             color: var(--text-color);
@@ -74,9 +79,40 @@
             transition: all 0.3s ease;
         }
 
-        .theme-switch:hover {
+        .action-btn:hover {
             border-color: var(--accent-color);
             color: var(--accent-color);
+        }
+
+        .action-btn.active-lib {
+            background: var(--accent-color);
+            color: var(--btn-text);
+            border-color: var(--accent-color);
+        }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--accent-color);
+            color: var(--btn-text);
+            border-color: var(--accent-color);
         }
 
         /* Suchbereich & Autosuggest */
@@ -189,7 +225,7 @@
             margin-bottom: 20px;
         }
 
-        /* Buch-Karten (Suchergebnisse) */
+        /* Buch-Karten */
         .book-card {
             background: var(--card-bg);
             padding: 20px;
@@ -244,12 +280,21 @@
             font-weight: 600;
             font-size: 14px;
             transition: all 0.3s ease;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
         }
 
         .download-btn:hover {
             background-color: var(--accent-color);
             color: var(--btn-text);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .no-cover-placeholder {
@@ -263,11 +308,33 @@
             padding: 5px;
         }
 
+        #libraryView {
+            display: none;
+        }
+
+        .library-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-color);
+            opacity: 0.6;
+            font-style: italic;
+        }
+
         @media (max-width: 600px) {
             .header-container {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 16px;
+            }
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
             }
             .search-container {
                 flex-direction: column;
@@ -291,22 +358,51 @@
 
     <div class="header-container">
         <h1>Projekt Gutenberg eBook-loader</h1>
-        <button class="theme-switch" onclick="toggleTheme()" id="themeBtn">Light Mode</button>
+        <div class="header-actions">
+            <button class="action-btn" onclick="toggleLibrary()" id="libraryBtn">Bibliothek (0)</button>
+            <button class="action-btn" onclick="toggleTheme()" id="themeBtn">Light Mode</button>
+        </div>
     </div>
     
-    <div class="search-wrapper">
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Buchtitel oder Autor eingeben..." autocomplete="off">
-            <button class="search-btn" onclick="searchBooks()">Suchen</button>
+    <div id="searchView">
+        <div class="filter-tabs">
+            <button class="filter-btn active" data-lang="de,en" onclick="setLanguage('de,en', this)">Alle</button>
+            <button class="filter-btn" data-lang="de" onclick="setLanguage('de', this)">Deutsch</button>
+            <button class="filter-btn" data-lang="en" onclick="setLanguage('en', this)">Englisch</button>
         </div>
-        <div class="suggestions-box" id="suggestionsBox"></div>
+
+        <div class="search-wrapper">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Buchtitel oder Autor eingeben..." autocomplete="off">
+                <button class="search-btn" onclick="searchBooks()">Suchen</button>
+            </div>
+            <div class="suggestions-box" id="suggestionsBox"></div>
+        </div>
+
+        <div id="loading">Suche in der Datenbank läuft...</div>
+        <div id="results"></div>
     </div>
 
-    <div id="loading">Suche in der Datenbank läuft...</div>
-    <div id="results"></div>
+    <div id="libraryView">
+        <div class="library-header">
+            <h2 style="font-family: 'Bodoni Moda', serif; margin: 0; color: var(--heading-color);">Meine geladenen eBooks</h2>
+        </div>
+        <div id="libraryResults"></div>
+    </div>
 
     <script>
-        // Theme Logic
+        let currentLang = 'de,en'; 
+        let library = JSON.parse(localStorage.getItem('gutenberg_library')) || [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.documentElement.removeAttribute('data-theme');
+                document.getElementById('themeBtn').textContent = 'Dark Mode';
+            }
+            updateLibraryCount();
+        });
+
         function toggleTheme() {
             const html = document.documentElement;
             const btn = document.getElementById('themeBtn');
@@ -321,15 +417,71 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.documentElement.removeAttribute('data-theme');
-                document.getElementById('themeBtn').textContent = 'Dark Mode';
-            }
-        });
+        function setLanguage(lang, btnElement) {
+            currentLang = lang;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
 
-        // Autosuggest Logic
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput.value.trim().length > 0) {
+                searchBooks();
+            }
+        }
+
+        function toggleLibrary() {
+            const searchView = document.getElementById('searchView');
+            const libraryView = document.getElementById('libraryView');
+            const libBtn = document.getElementById('libraryBtn');
+            
+            if (libraryView.style.display === 'none' || libraryView.style.display === '') {
+                searchView.style.display = 'none';
+                libraryView.style.display = 'block';
+                libBtn.textContent = 'Zurück zur Suche';
+                libBtn.classList.add('active-lib');
+                renderLibrary();
+            } else {
+                searchView.style.display = 'block';
+                libraryView.style.display = 'none';
+                updateLibraryCount();
+                libBtn.classList.remove('active-lib');
+            }
+        }
+
+        function updateLibraryCount() {
+            document.getElementById('libraryBtn').textContent = `Bibliothek (${library.length})`;
+        }
+
+        function saveToLibrary(bookData) {
+            const exists = library.find(b => b.id === bookData.id);
+            if (!exists) {
+                library.unshift(bookData);
+                localStorage.setItem('gutenberg_library', JSON.stringify(library));
+                updateLibraryCount();
+            }
+        }
+
+        function removeFromLibrary(id) {
+            library = library.filter(b => b.id !== id);
+            localStorage.setItem('gutenberg_library', JSON.stringify(library));
+            updateLibraryCount();
+            renderLibrary(); 
+        }
+
+        function renderLibrary() {
+            const libResultsDiv = document.getElementById('libraryResults');
+            libResultsDiv.innerHTML = '';
+
+            if (library.length === 0) {
+                libResultsDiv.innerHTML = '<div class="empty-state">Noch keine eBooks heruntergeladen. Starte eine Suche!</div>';
+                return;
+            }
+
+            library.forEach(book => {
+                const card = createBookCard(book, true);
+                libResultsDiv.appendChild(card);
+            });
+        }
+
         const searchInput = document.getElementById('searchInput');
         const suggestionsBox = document.getElementById('suggestionsBox');
         let debounceTimeout;
@@ -343,7 +495,7 @@
                 return;
             }
 
-            debounceTimeout = setTimeout(() => fetchSuggestions(query), 400); // 400ms warten
+            debounceTimeout = setTimeout(() => fetchSuggestions(query), 400);
         });
 
         searchInput.addEventListener('keypress', (e) => {
@@ -353,7 +505,6 @@
             }
         });
 
-        // Schließt das Dropdown, wenn man woanders hin klickt
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.search-wrapper')) {
                 suggestionsBox.style.display = 'none';
@@ -362,7 +513,7 @@
 
         async function fetchSuggestions(query) {
             try {
-                const response = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}&languages=de`);
+                const response = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}&languages=${currentLang}`);
                 const data = await response.json();
                 
                 suggestionsBox.innerHTML = '';
@@ -370,9 +521,7 @@
                 if (data.results.length === 0) {
                     suggestionsBox.innerHTML = '<div style="padding: 12px 16px; font-size: 14px;">Keine Vorschläge gefunden.</div>';
                 } else {
-                    // Zeige nur die Top 5 Vorschläge an
                     const topResults = data.results.slice(0, 5);
-                    
                     topResults.forEach(book => {
                         const item = document.createElement('div');
                         item.className = 'suggestion-item';
@@ -395,7 +544,7 @@
                         item.addEventListener('click', () => {
                             searchInput.value = book.title;
                             suggestionsBox.style.display = 'none';
-                            searchBooks(book.title); // Starte direkte Suche
+                            searchBooks(book.title);
                         });
                         
                         suggestionsBox.appendChild(item);
@@ -407,12 +556,118 @@
             }
         }
 
-        // Hauptsuche
+        // Diese Funktion regelt den Download und erzwingt den eigenen Dateinamen
+        async function downloadEpubFile(url, title) {
+            // Säubere den Buchtitel von Zeichen, die Dateisysteme nicht mögen
+            const safeTitle = title.replace(/[\\/:*?"<>|]/g, '').trim().substring(0, 60);
+            const filename = `${safeTitle}.epub`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Netzwerkfehler');
+                
+                // Wandle die Antwort in ein lokales Objekt um
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                // Erstelle einen temporären Link und klicke ihn an
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = filename; // Hier greift jetzt unser Wunsch-Name!
+                document.body.appendChild(a);
+                a.click();
+                
+                // Räume den Speicher wieder auf
+                window.URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.warn('Fetch-Download fehlgeschlagen, nutze Fallback.', error);
+                // Fallback, falls der Gutenberg-Server den Direkt-Fetch mal blockieren sollte
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = filename; 
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
+
+        function createBookCard(book, isLibraryView = false) {
+            const card = document.createElement('div');
+            card.className = 'book-card';
+
+            const coverImg = document.createElement('img');
+            coverImg.className = 'result-cover';
+            if (book.coverUrl) {
+                coverImg.src = book.coverUrl;
+                coverImg.alt = `Cover von ${book.title}`;
+            } else {
+                coverImg.className += ' no-cover-placeholder';
+                coverImg.alt = '';
+                coverImg.outerHTML = `<div class="result-cover no-cover-placeholder">Kein Cover</div>`;
+            }
+            if (book.coverUrl) card.appendChild(coverImg);
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'book-info';
+
+            const title = document.createElement('h3');
+            title.textContent = book.title;
+
+            const author = document.createElement('p');
+            author.textContent = `Von: ${book.authorName}`;
+
+            infoDiv.appendChild(title);
+            infoDiv.appendChild(author);
+
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'download-btn';
+            
+            if (isLibraryView) {
+                downloadBtn.textContent = 'Erneut Laden';
+                downloadBtn.onclick = async () => {
+                    downloadBtn.textContent = 'Lädt...';
+                    downloadBtn.disabled = true;
+                    await downloadEpubFile(book.epubLink, book.title);
+                    downloadBtn.textContent = 'Erneut Laden';
+                    downloadBtn.disabled = false;
+                };
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'download-btn';
+                removeBtn.style.borderColor = '#E74C3C';
+                removeBtn.style.color = '#E74C3C';
+                removeBtn.style.marginLeft = '10px';
+                removeBtn.textContent = 'Entfernen';
+                removeBtn.onclick = () => removeFromLibrary(book.id);
+                
+                infoDiv.appendChild(downloadBtn);
+                infoDiv.appendChild(removeBtn);
+            } else {
+                downloadBtn.textContent = 'EPUB Laden';
+                downloadBtn.onclick = async () => {
+                    saveToLibrary(book);
+                    downloadBtn.textContent = 'Lädt...';
+                    downloadBtn.disabled = true;
+                    await downloadEpubFile(book.epubLink, book.title);
+                    downloadBtn.textContent = 'EPUB Laden';
+                    downloadBtn.disabled = false;
+                };
+                infoDiv.appendChild(downloadBtn);
+            }
+
+            card.appendChild(infoDiv);
+            return card;
+        }
+
         async function searchBooks(queryParam = null) {
             const query = queryParam || searchInput.value.trim();
             const resultsDiv = document.getElementById('results');
             const loadingDiv = document.getElementById('loading');
-            suggestionsBox.style.display = 'none'; // Dropdown verstecken
+            suggestionsBox.style.display = 'none';
 
             if (!query) return;
 
@@ -420,64 +675,41 @@
             loadingDiv.style.display = 'block';
 
             try {
-                const response = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}&languages=de`);
+                const response = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}&languages=${currentLang}`);
                 const data = await response.json();
 
                 loadingDiv.style.display = 'none';
 
                 if (data.results.length === 0) {
-                    resultsDiv.innerHTML = '<p style="text-align: center;">Keine deutschen Bücher für diesen Suchbegriff gefunden.</p>';
+                    const langText = currentLang === 'de' ? 'deutschen' : (currentLang === 'en' ? 'englischen' : '');
+                    resultsDiv.innerHTML = `<p style="text-align: center;">Keine ${langText} Bücher für diesen Suchbegriff gefunden.</p>`;
                     return;
                 }
 
-                data.results.forEach(book => {
-                    const epubLink = book.formats['application/epub+zip'];
+                let foundEpub = false;
+
+                data.results.forEach(apiBook => {
+                    const epubLink = apiBook.formats['application/epub+zip'];
 
                     if (epubLink) {
-                        const card = document.createElement('div');
-                        card.className = 'book-card';
+                        foundEpub = true;
+                        const authorName = apiBook.authors.length > 0 ? apiBook.authors[0].name : 'Unbekannter Autor';
+                        const coverUrl = apiBook.formats['image/jpeg'] || null;
 
-                        // Cover Extraktion
-                        const coverUrl = book.formats['image/jpeg'];
-                        if (coverUrl) {
-                            const coverImg = document.createElement('img');
-                            coverImg.className = 'result-cover';
-                            coverImg.src = coverUrl;
-                            coverImg.alt = `Cover von ${book.title}`;
-                            card.appendChild(coverImg);
-                        } else {
-                            const noCover = document.createElement('div');
-                            noCover.className = 'result-cover no-cover-placeholder';
-                            noCover.textContent = 'Kein Cover verfügbar';
-                            card.appendChild(noCover);
-                        }
+                        const bookData = {
+                            id: apiBook.id,
+                            title: apiBook.title,
+                            authorName: authorName,
+                            epubLink: epubLink,
+                            coverUrl: coverUrl
+                        };
 
-                        const infoDiv = document.createElement('div');
-                        infoDiv.className = 'book-info';
-
-                        const title = document.createElement('h3');
-                        title.textContent = book.title;
-
-                        const author = document.createElement('p');
-                        const authorName = book.authors.length > 0 ? book.authors[0].name : 'Unbekannter Autor';
-                        author.textContent = `Von: ${authorName}`;
-
-                        const downloadBtn = document.createElement('a');
-                        downloadBtn.className = 'download-btn';
-                        downloadBtn.href = epubLink;
-                        downloadBtn.download = ''; 
-                        downloadBtn.textContent = 'EPUB Laden';
-
-                        infoDiv.appendChild(title);
-                        infoDiv.appendChild(author);
-                        infoDiv.appendChild(downloadBtn);
-                        
-                        card.appendChild(infoDiv);
+                        const card = createBookCard(bookData, false);
                         resultsDiv.appendChild(card);
                     }
                 });
 
-                if (resultsDiv.innerHTML === '') {
+                if (!foundEpub) {
                     resultsDiv.innerHTML = '<p style="text-align: center;">Bücher gefunden, aber aktuell keine EPUB-Dateien verfügbar.</p>';
                 }
 
