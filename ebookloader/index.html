@@ -115,9 +115,8 @@
             border-color: var(--accent-color);
         }
 
-        /* Suchbereich & Autosuggest */
+        /* Suchbereich */
         .search-wrapper {
-            position: relative;
             margin-bottom: 40px;
         }
 
@@ -161,68 +160,45 @@
             background-color: var(--accent-hover);
         }
 
-        /* Autosuggest Dropdown */
-        .suggestions-box {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            margin-top: 8px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            max-height: 350px;
-            overflow-y: auto;
-            z-index: 100;
-            display: none;
-        }
-
-        .suggestion-item {
-            display: flex;
+        /* Kissing Spinner Animation */
+        .kissing-spinner {
+            display: none; /* Wird per JS auf flex gesetzt */
+            justify-content: center;
             align-items: center;
-            padding: 12px 16px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.2s ease;
+            margin: 40px auto;
+            width: 60px;
+            height: 20px;
+            position: relative;
         }
 
-        .suggestion-item:last-child {
-            border-bottom: none;
+        .kiss-dot {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
         }
 
-        .suggestion-item:hover {
-            background-color: var(--hover-bg);
+        .kiss-dot.left {
+            left: 0;
+            animation: kissLeft 0.6s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .suggestion-cover {
-            width: 40px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin-right: 16px;
-            background-color: var(--border-color);
-        }
-
-        .suggestion-text h4 {
-            margin: 0 0 4px 0;
-            font-size: 14px;
-            color: var(--heading-color);
-        }
-
-        .suggestion-text p {
-            margin: 0;
-            font-size: 12px;
-            color: var(--text-color);
+        .kiss-dot.right {
+            right: 0;
+            background-color: var(--text-color);
             opacity: 0.7;
+            animation: kissRight 0.6s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        #loading {
-            text-align: center;
-            color: var(--accent-color);
-            font-style: italic;
-            display: none;
-            margin-bottom: 20px;
+        @keyframes kissLeft {
+            0% { transform: translateX(0) scale(1); border-radius: 50%; }
+            100% { transform: translateX(20px) scale(1.1); border-radius: 50% 30% 30% 50%; }
+        }
+
+        @keyframes kissRight {
+            0% { transform: translateX(0) scale(1); border-radius: 50%; }
+            100% { transform: translateX(-20px) scale(1.1); border-radius: 30% 50% 50% 30%; }
         }
 
         /* Buch-Karten */
@@ -348,9 +324,6 @@
                 width: 120px;
                 height: 180px;
             }
-            .suggestions-box {
-                max-height: 250px;
-            }
         }
     </style>
 </head>
@@ -373,13 +346,17 @@
 
         <div class="search-wrapper">
             <div class="search-container">
-                <input type="text" id="searchInput" placeholder="Buchtitel oder Autor eingeben..." autocomplete="off">
+                <input type="text" id="searchInput" placeholder="Buchtitel oder Autor eingeben..." onkeypress="handleKeyPress(event)">
                 <button class="search-btn" onclick="searchBooks()">Suchen</button>
             </div>
-            <div class="suggestions-box" id="suggestionsBox"></div>
         </div>
 
-        <div id="loading">Suche in der Datenbank läuft...</div>
+        <!-- Der neue Kissing Spinner -->
+        <div class="kissing-spinner" id="loadingSpinner">
+            <div class="kiss-dot left"></div>
+            <div class="kiss-dot right"></div>
+        </div>
+
         <div id="results"></div>
     </div>
 
@@ -482,83 +459,15 @@
             });
         }
 
-        const searchInput = document.getElementById('searchInput');
-        const suggestionsBox = document.getElementById('suggestionsBox');
-        let debounceTimeout;
-
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(debounceTimeout);
-            const query = e.target.value.trim();
-
-            if (query.length < 3) {
-                suggestionsBox.style.display = 'none';
-                return;
-            }
-
-            debounceTimeout = setTimeout(() => fetchSuggestions(query), 400);
-        });
-
-        searchInput.addEventListener('keypress', (e) => {
+        function handleKeyPress(e) {
             if (e.key === 'Enter') {
-                suggestionsBox.style.display = 'none';
-                searchBooks(searchInput.value);
-            }
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-wrapper')) {
-                suggestionsBox.style.display = 'none';
-            }
-        });
-
-        async function fetchSuggestions(query) {
-            try {
-                const response = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}&languages=${currentLang}`);
-                const data = await response.json();
-                
-                suggestionsBox.innerHTML = '';
-                
-                if (data.results.length === 0) {
-                    suggestionsBox.innerHTML = '<div style="padding: 12px 16px; font-size: 14px;">Keine Vorschläge gefunden.</div>';
-                } else {
-                    const topResults = data.results.slice(0, 5);
-                    topResults.forEach(book => {
-                        const item = document.createElement('div');
-                        item.className = 'suggestion-item';
-                        
-                        const coverUrl = book.formats['image/jpeg'];
-                        const coverHtml = coverUrl 
-                            ? `<img src="${coverUrl}" class="suggestion-cover" alt="Cover">` 
-                            : `<div class="suggestion-cover no-cover-placeholder">Kein Cover</div>`;
-
-                        const authorName = book.authors.length > 0 ? book.authors[0].name : 'Unbekannt';
-                        
-                        item.innerHTML = `
-                            ${coverHtml}
-                            <div class="suggestion-text">
-                                <h4>${book.title}</h4>
-                                <p>${authorName}</p>
-                            </div>
-                        `;
-                        
-                        item.addEventListener('click', () => {
-                            searchInput.value = book.title;
-                            suggestionsBox.style.display = 'none';
-                            searchBooks(book.title);
-                        });
-                        
-                        suggestionsBox.appendChild(item);
-                    });
-                }
-                suggestionsBox.style.display = 'block';
-            } catch (error) {
-                console.error("Autosuggest Error:", error);
+                searchBooks();
             }
         }
 
-        // Diese Funktion regelt den Download und erzwingt den eigenen Dateinamen
+        const searchInput = document.getElementById('searchInput');
+
         async function downloadEpubFile(url, title) {
-            // Säubere den Buchtitel von Zeichen, die Dateisysteme nicht mögen
             const safeTitle = title.replace(/[\\/:*?"<>|]/g, '').trim().substring(0, 60);
             const filename = `${safeTitle}.epub`;
 
@@ -566,24 +475,20 @@
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Netzwerkfehler');
                 
-                // Wandle die Antwort in ein lokales Objekt um
                 const blob = await response.blob();
                 const blobUrl = window.URL.createObjectURL(blob);
                 
-                // Erstelle einen temporären Link und klicke ihn an
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = blobUrl;
-                a.download = filename; // Hier greift jetzt unser Wunsch-Name!
+                a.download = filename; 
                 document.body.appendChild(a);
                 a.click();
                 
-                // Räume den Speicher wieder auf
                 window.URL.revokeObjectURL(blobUrl);
                 document.body.removeChild(a);
             } catch (error) {
                 console.warn('Fetch-Download fehlgeschlagen, nutze Fallback.', error);
-                // Fallback, falls der Gutenberg-Server den Direkt-Fetch mal blockieren sollte
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
@@ -666,19 +571,18 @@
         async function searchBooks(queryParam = null) {
             const query = queryParam || searchInput.value.trim();
             const resultsDiv = document.getElementById('results');
-            const loadingDiv = document.getElementById('loading');
-            suggestionsBox.style.display = 'none';
+            const loadingSpinner = document.getElementById('loadingSpinner');
 
             if (!query) return;
 
             resultsDiv.innerHTML = '';
-            loadingDiv.style.display = 'block';
+            loadingSpinner.style.display = 'flex';
 
             try {
                 const response = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}&languages=${currentLang}`);
                 const data = await response.json();
 
-                loadingDiv.style.display = 'none';
+                loadingSpinner.style.display = 'none';
 
                 if (data.results.length === 0) {
                     const langText = currentLang === 'de' ? 'deutschen' : (currentLang === 'en' ? 'englischen' : '');
@@ -714,7 +618,7 @@
                 }
 
             } catch (error) {
-                loadingDiv.style.display = 'none';
+                loadingSpinner.style.display = 'none';
                 resultsDiv.innerHTML = '<p style="text-align: center; color: red;">Fehler bei der Verbindung zur API.</p>';
                 console.error("API Error:", error);
             }
