@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fußball Tracker</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f5;
+            --surface-color: #ffffff;
+            --text-color: #2b2b2b; /* Anthrazit-Äquivalent für Light Mode */
+            --text-muted: #71717a;
+            --accent-color: #d4af37; /* Gold */
+            --border-color: #e4e4e7;
+            --btn-bg: #2b2b2b;
+            --btn-text: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a; /* Anthrazit */
+            --surface-color: #2b2b2b;
+            --text-color: #ffffff;
+            --text-muted: #a1a1aa;
+            --accent-color: #d4af37; /* Gold */
+            --border-color: #3f3f46;
+            --btn-bg: #d4af37;
+            --btn-text: #1a1a1a;
+        }
+
+        body {
+            font-family: 'Avenir Next', Avenir, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-weight: 600;
+            margin: 0;
+        }
+
+        button.theme-toggle {
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        button.theme-toggle:hover {
+            opacity: 0.9;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .match-section {
+            margin-bottom: 1rem;
+        }
+
+        .match-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .match-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .match-score {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .comment {
+            font-size: 0.95rem;
+            font-style: italic;
+            border-left: 3px solid var(--accent-color);
+            padding-left: 0.75rem;
+            margin: 0.5rem 0;
+            color: var(--text-color);
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <header>
+        <h1>Match Day Tracker</h1>
+        <button class="theme-toggle" id="themeToggle">Light Mode</button>
+    </header>
+
+    <div class="grid" id="club-container">
+        <!-- Cards werden per JavaScript generiert -->
+    </div>
+
+    <script>
+        // Theme Toggle Logic
+        const toggleBtn = document.getElementById('themeToggle');
+        const body = document.body;
+
+        toggleBtn.addEventListener('click', () => {
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                toggleBtn.textContent = 'Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                toggleBtn.textContent = 'Light Mode';
+            }
+        });
+
+        // Datenstruktur: Hier würden später echte API-Daten oder deine manuellen Fakten einfließen.
+        // Die Kommentare müssen hier als echte Fakten formuliert werden, damit du dich auf sie verlassen kannst.
+        const matchData = [
+            {
+                name: "VfB Stuttgart",
+                lastMatch: {
+                    status: "Beendet",
+                    score: "VfB Stuttgart 3 - 1 FC Bayern München",
+                    comment: "[Faktischer Kommentar zum letzten Spiel eintragen, z.B. Guirassy mit entscheidendem Treffer in der 83. Minute]"
+                },
+                currentMatch: {
+                    status: "Aktuell",
+                    score: "FC Augsburg 0 - 1 VfB Stuttgart",
+                    comment: "[Faktischer Kommentar eintragen, z.B. Führung durch frühen Elfmeter]"
+                },
+                nextMatch: "vs. Borussia M'gladbach (Sa, 15:30 Uhr)"
+            },
+            {
+                name: "1860 München",
+                lastMatch: {
+                    status: "Beendet",
+                    score: "Rot-Weiss Essen 0 - 1 1860 München",
+                    comment: "[Faktischer Kommentar eintragen, z.B. Wichtiger Auswärtssieg für den Klassenerhalt]"
+                },
+                currentMatch: {
+                    status: "Aktuell",
+                    score: "1860 München 2 - 2 Arminia Bielefeld",
+                    comment: "[Faktischer Kommentar eintragen, z.B. Ausgleich in der Nachspielzeit kassiert]"
+                },
+                nextMatch: "Saison beendet / Nächstes Testspiel tba"
+            },
+            {
+                name: "1. FC Köln",
+                lastMatch: {
+                    status: "Beendet",
+                    score: "1. FC Köln 3 - 2 Union Berlin",
+                    comment: "[Faktischer Kommentar eintragen, z.B. Spiel gedreht nach 0:2 Rückstand]"
+                },
+                currentMatch: {
+                    status: "Aktuell",
+                    score: "1. FC Heidenheim 1 - 0 1. FC Köln",
+                    comment: "[Faktischer Kommentar eintragen, z.B. Chancenverwertung in der ersten Halbzeit ungenügend]"
+                },
+                nextMatch: "vs. [Gegner] (Datum)"
+            }
+        ];
+
+        function renderCards() {
+            const container = document.getElementById('club-container');
+            container.innerHTML = '';
+
+            matchData.forEach(club => {
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                card.innerHTML = `
+                    <h2>${club.name}</h2>
+                    
+                    <div class="match-section">
+                        <div class="match-title">Letztes Spiel</div>
+                        <div class="match-score">${club.lastMatch.score}</div>
+                        <div class="comment">„${club.lastMatch.comment}“</div>
+                    </div>
+
+                    <div class="match-section">
+                        <div class="match-title">Aktuelles / Jüngstes Spiel</div>
+                        <div class="match-score">${club.currentMatch.score}</div>
+                        <div class="comment">„${club.currentMatch.comment}“</div>
+                    </div>
+
+                    <div class="match-section">
+                        <div class="match-title">Nächstes Spiel</div>
+                        <div class="match-score">${club.nextMatch}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Initiale Render-Ausführung
+        renderCards();
+    </script>
+</body>
+</html>
