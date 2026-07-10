@@ -45,6 +45,7 @@
             box-shadow: 0 10px 40px rgba(212, 175, 55, 0.05);
             margin-bottom: 2rem;
             border: 1px solid rgba(212, 175, 55, 0.15);
+            display: block; /* Standardmäßig sichtbar */
         }
 
         h1 {
@@ -144,6 +145,12 @@
             transform: scale(1);
         }
 
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
         .btn-export {
             background-color: var(--primary);
             color: #000;
@@ -160,33 +167,29 @@
             box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
         }
 
-        .btn-export:hover, .btn-export:focus {
-            background-color: var(--primary-hover);
-            outline: none;
-        }
-
-        /* Verstecktes Export-Layout (nur für JPG Generierung) */
+        /* Das versteckte Layout, das nur für das JPG gerendert wird */
         #print-layout {
-            position: absolute;
-            left: -9999px;
-            top: 0;
-            width: 800px;
-            background-color: #0a0a0a;
+            display: none; /* Im normalen Zustand unsichtbar */
+            width: 800px; /* Feste Breite für ein sauberes Bildformat */
+            background-color: var(--bg-color);
             padding: 60px;
             box-sizing: border-box;
             color: var(--text-main);
         }
 
         #print-layout h1 {
-            font-size: 2.5rem;
-            margin-bottom: 40px;
+            font-size: 2.2rem;
+            margin-bottom: 50px;
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
         }
 
         .print-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
+            padding: 22px 0;
             border-bottom: 1px solid #1a1a1a;
         }
 
@@ -195,32 +198,34 @@
         }
 
         .print-room {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 600;
             color: var(--primary);
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            width: 40%;
+            width: 45%;
         }
 
         .print-lamp {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             color: var(--text-main);
             text-align: right;
-            width: 60%;
+            width: 55%;
             font-weight: 400;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" id="main-container">
         <div id="ui-area">
             <h1>Lampenplanung Blumenstr. 21</h1>
             <div id="rooms-container"></div>
         </div>
         
-        <button class="btn-export" tabindex="0" onclick="exportToJPG()">💾 Plan als JPG speichern</button>
+        <div class="btn-container">
+            <button class="btn-export" tabindex="0">💾 Plan als JPG speichern</button>
+        </div>
     </div>
 
     <div id="print-layout"></div>
@@ -281,109 +286,4 @@
 
             const newLampOpt = document.createElement('option');
             newLampOpt.value = "NEU";
-            newLampOpt.innerText = "Neue Lampe kaufen";
-            select.appendChild(newLampOpt);
-
-            oldLamps.forEach((lamp, idx) => {
-                const opt = document.createElement('option');
-                opt.value = `${lamp.name}_${idx}`;
-                opt.innerText = `${lamp.name} (${lamp.room})`;
-                select.appendChild(opt);
-            });
-
-            const indicator = document.createElement('div');
-            indicator.className = 'indicator';
-            indicator.innerHTML = '✓';
-
-            inputWrapper.appendChild(select);
-            inputWrapper.appendChild(indicator);
-            
-            roomDiv.appendChild(label);
-            roomDiv.appendChild(inputWrapper);
-            container.appendChild(roomDiv);
-        });
-
-        // Interaktive Proximity Mechanik für den Button
-        const exportBtn = document.querySelector('.btn-export');
-        exportBtn.addEventListener('mouseenter', function() {
-            const maxX = window.innerWidth - this.offsetWidth;
-            const maxY = window.innerHeight - this.offsetHeight;
-            
-            const randomX = Math.max(0, Math.floor(Math.random() * maxX));
-            const randomY = Math.max(0, Math.floor(Math.random() * maxY));
-            
-            this.style.position = 'fixed';
-            this.style.left = `${randomX}px`;
-            this.style.top = `${randomY}px`;
-            this.style.zIndex = '9999';
-            this.style.width = 'auto'; 
-        });
-
-        function exportToJPG() {
-            const printArea = document.getElementById('print-layout');
-            printArea.innerHTML = ''; // Vorherige Renders leeren
-
-            // Header generieren
-            const header = document.createElement('h1');
-            header.innerText = 'Lampenplanung Blumenstr. 21';
-            printArea.appendChild(header);
-
-            // Auswahlen auslesen und sauber formatieren
-            const roomItems = document.querySelectorAll('.room-item');
-            
-            roomItems.forEach(item => {
-                const roomName = item.querySelector('.room-label').innerText;
-                const select = item.querySelector('select');
-                const selectedText = select.options[select.selectedIndex].innerText;
-                const selectedValue = select.value;
-
-                const row = document.createElement('div');
-                row.className = 'print-row';
-                
-                const roomDiv = document.createElement('div');
-                roomDiv.className = 'print-room';
-                roomDiv.innerText = roomName;
-
-                const lampDiv = document.createElement('div');
-                lampDiv.className = 'print-lamp';
-                
-                if (selectedValue === "") {
-                    lampDiv.innerText = "— Noch offen —";
-                    lampDiv.style.color = "#555555";
-                } else {
-                    lampDiv.innerText = selectedText;
-                }
-
-                row.appendChild(roomDiv);
-                row.appendChild(lampDiv);
-                printArea.appendChild(row);
-            });
-
-            const button = document.querySelector('.btn-export');
-            const originalText = button.innerText;
-            button.innerText = "⏳ Generiere sauberes JPG...";
-            
-            // Verstecktes Div als sauberes Bild rendern
-            html2canvas(printArea, {
-                scale: 2, 
-                backgroundColor: "#0a0a0a", 
-                logging: false,
-                useCORS: true
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'Lampenplanung_Blumenstr21_Sauber.jpg';
-                link.href = canvas.toDataURL('image/jpeg', 0.9);
-                link.click();
-                
-                button.innerText = originalText;
-                // Button wieder an Ursprung setzen nach Klick
-                button.style.position = 'static';
-            }).catch(err => {
-                console.error("Fehler: ", err);
-                alert("Export fehlgeschlagen.");
-                button.innerText = originalText;
-            });
-        }
-    </script>
-</body>
-</html>
+            newLampOpt.innerText = "✨ Neue Lampe kaufen";
