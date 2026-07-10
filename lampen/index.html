@@ -22,8 +22,12 @@
         h1 { font-size: 1.6rem; margin-top: 0; margin-bottom: 2rem; text-align: center; color: var(--primary); text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 15px; }
         .logo { font-size: 2.5rem; }
         
-        .room-item { margin-bottom: 1.5rem; }
+        .room-item { margin-bottom: 1.5rem; position: relative; }
         .room-label { font-weight: 500; font-size: 0.95rem; text-transform: uppercase; display: block; margin-bottom: 0.5rem; }
+        
+        /* Reset Button Style */
+        .reset-btn { position: absolute; top: 0; right: 0; cursor: pointer; color: #ff4444; font-size: 1.5rem; font-weight: bold; line-height: 1; }
+        
         select, input { padding: 0.8rem; border-radius: 6px; background: #000; color: white; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; margin-bottom: 5px; }
         select:disabled { opacity: 0.4; cursor: not-allowed; }
         .input-group { display: none; }
@@ -75,10 +79,12 @@
         newRooms.forEach((room, index) => {
             const div = document.createElement('div');
             div.className = 'room-item';
-            div.innerHTML = `<label class="room-label">${room.name} (${room.sub})</label>
-                             <select class="lamp-select" data-index="${index}"><option value="">-- Bitte wählen --</option><option value="NEU">✨ Neue Lampe kaufen</option>
-                             ${oldLamps.map(l => `<option value="${l.id}">${l.name} (aus ${l.room})</option>`).join('')}</select>
-                             <div class="input-group" id="group-${index}"><input type="text" placeholder="Was stellst du dir vor?" class="wish-input" data-index="${index}"></div>`;
+            div.innerHTML = `
+                <label class="room-label">${room.name} (${room.sub})</label>
+                <span class="reset-btn" onclick="resetRoom(${index})">×</span>
+                <select class="lamp-select" data-index="${index}"><option value="">-- Bitte wählen --</option><option value="NEU">✨ Neue Lampe kaufen</option>
+                ${oldLamps.map(l => `<option value="${l.id}">${l.name} (aus ${l.room})</option>`).join('')}</select>
+                <div class="input-group" id="group-${index}"><input type="text" placeholder="Was stellst du dir vor?" class="wish-input" data-index="${index}"></div>`;
             container.appendChild(div);
             
             const sel = div.querySelector('select');
@@ -100,6 +106,15 @@
         updateDropdowns();
     }
 
+    // Reset Funktion für das "X"
+    function resetRoom(index) {
+        const row = document.querySelectorAll('.room-item')[index];
+        row.querySelector('.lamp-select').value = "";
+        row.querySelector('.wish-input').value = "";
+        row.querySelector('.input-group').style.display = "none";
+        updateDropdowns();
+    }
+
     function updateDropdowns() {
         const selects = document.querySelectorAll('.lamp-select');
         const data = {};
@@ -114,7 +129,6 @@
             const currentVal = select.value;
             Array.from(select.options).forEach(opt => {
                 if (opt.value === "" || opt.value === "NEU") return;
-                // Deaktivieren, wenn schon in anderem Dropdown gewählt
                 opt.disabled = selectedValues.includes(opt.value) && opt.value !== currentVal;
             });
         });
