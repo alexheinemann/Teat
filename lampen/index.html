@@ -24,15 +24,13 @@
         h1 { font-size: 1.8rem; margin-top: 0; margin-bottom: 2.5rem; text-align: center; color: var(--primary); text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; }
         .room-item { margin-bottom: 1.5rem; display: flex; flex-direction: column; }
         .room-label { font-weight: 500; margin-bottom: 0.6rem; font-size: 0.95rem; color: var(--text-main); text-transform: uppercase; }
-        select { padding: 1rem; border-radius: 8px; background: #0a0a0a; color: white; border: 1px solid var(--border-color); cursor: pointer; width: 100%; }
-        select:disabled { opacity: 0.5; }
+        select, input { padding: 1rem; border-radius: 8px; background: #0a0a0a; color: white; border: 1px solid var(--border-color); width: 100%; margin-top: 0.5rem; box-sizing: border-box; }
+        .input-group { margin-top: 0.5rem; display: none; }
         .btn-export { background-color: var(--primary); color: #000; border: none; padding: 1.2rem; font-weight: 700; text-transform: uppercase; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 1rem; }
-        .btn-export:hover { background-color: var(--primary-hover); }
-
+        
         #print-layout { display: none; width: 800px; background-color: var(--bg-color); padding: 60px; color: var(--text-main); }
         .print-row { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #222; }
         .print-cat { color: var(--primary); font-weight: bold; text-transform: uppercase; }
-        .print-waste { color: #ff4444; font-weight: bold; margin-top: 40px; border-top: 2px solid #ff4444; padding-top: 20px; text-transform: uppercase;}
     </style>
 </head>
 <body>
@@ -70,8 +68,6 @@
         ];
 
         const container = document.getElementById('rooms-container');
-
-        // UI Aufbau & persistente Daten laden
         const savedData = JSON.parse(localStorage.getItem('lampPlan')) || {};
 
         newRooms.forEach((room, index) => {
@@ -79,25 +75,36 @@
             div.className = 'room-item';
             div.innerHTML = `<label class="room-label">${room.name} (${room.sub})</label>
                              <select class="lamp-select" data-index="${index}"><option value="">-- Bitte wählen --</option><option value="NEU">✨ Neue Lampe kaufen</option>
-                             ${oldLamps.map(l => `<option value="${l.id}">${l.name} (aus ${l.room})</option>`).join('')}</select>`;
+                             ${oldLamps.map(l => `<option value="${l.id}">${l.name} (aus ${l.room})</option>`).join('')}</select>
+                             <div class="input-group" id="group-${index}"><input type="text" placeholder="Was stellst du dir vor?" class="wish-input" data-index="${index}"></div>`;
             container.appendChild(div);
             
-            // Wert setzen falls gespeichert
-            if (savedData[index]) div.querySelector('select').value = savedData[index];
+            const sel = div.querySelector('select');
+            const inpGroup = div.querySelector('.input-group');
+            const inp = div.querySelector('.wish-input');
+
+            if (savedData[index]) sel.value = savedData[index].val;
+            if (savedData[index] && savedData[index].wish) { inp.value = savedData[index].wish; }
+            if (sel.value === "NEU") inpGroup.style.display = "block";
+
+            sel.addEventListener('change', () => {
+                inpGroup.style.display = sel.value === "NEU" ? "block" : "none";
+                updateDropdowns();
+            });
+            
+            inp.addEventListener('input', updateDropdowns);
         });
 
-        // Dropdown Logik & Speichern
         const updateDropdowns = () => {
-            const selects = document.querySelectorAll('.lamp-select');
             const data = {};
-            const selectedValues = Array.from(selects).map((s, i) => {
-                data[i] = s.value;
-                return s.value;
-            }).filter(v => v !== "" && v !== "NEU");
-            
+            const selectedValues = [];
+            document.querySelectorAll('.lamp-select').forEach((s, i) => {
+                data[i] = { val: s.value, wish: document.querySelectorAll('.wish-input')[i].value };
+                if (s.value !== "" && s.value !== "NEU") selectedValues.push(s.value);
+            });
             localStorage.setItem('lampPlan', JSON.stringify(data));
             
-            selects.forEach(select => {
+            document.querySelectorAll('.lamp-select').forEach(select => {
                 const currentVal = select.value;
                 Array.from(select.options).forEach(opt => {
                     if (opt.value === "" || opt.value === "NEU") return;
@@ -106,10 +113,6 @@
             });
         };
 
-        container.addEventListener('change', updateDropdowns);
-        updateDropdowns(); // Initialer Aufruf
-
-        // Export Logik
         document.getElementById('btn-export').addEventListener('click', () => {
             const uiArea = document.getElementById('main-container');
             const printArea = document.getElementById('print-layout');
@@ -118,10 +121,10 @@
             const usedLampIds = [];
             document.querySelectorAll('.lamp-select').forEach((sel, i) => {
                 const roomName = newRooms[i].name + " (" + newRooms[i].sub + ")";
+                const wish = document.querySelectorAll('.wish-input')[i].value;
+                let text = sel.value === "NEU" ? `✨ Wunsch: ${wish}` : (sel.value ? sel.options[sel.selectedIndex].text : "— offen —");
                 if (sel.value && sel.value !== "NEU") usedLampIds.push(sel.value);
-                const selectedText = sel.value === "NEU" ? "✨ Neue Lampe kaufen" : (sel.value ? sel.options[sel.selectedIndex].text : "— offen —");
-                
-                printArea.innerHTML += `<div class="print-row"><span class="print-cat">${roomName}</span><span>${selectedText}</span></div>`;
+                printArea.innerHTML += `<div class="print-row"><span class="print-cat">${roomName}</span><span>${text}</span></div>`;
             });
 
             const unused = oldLamps.filter(l => !usedLampIds.includes(l.id));
@@ -141,6 +144,7 @@
                 uiArea.style.display = 'block';
             });
         });
+        updateDropdowns();
     });
 </script>
 </body>
