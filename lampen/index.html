@@ -13,7 +13,7 @@
             --text-main: #eaeaea;
             --text-muted: #888888;
             --border-color: #2a2a2a;
-            --primary: #d4af37; /* Metallic Gold */
+            --primary: #d4af37; 
             --primary-hover: #b5952f;
             --success: #10b981; 
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -37,7 +37,6 @@
             max-width: 700px;
         }
 
-        /* Sichtbares Interface */
         #ui-area {
             background-color: var(--card-bg);
             padding: 3rem 2.5rem;
@@ -45,7 +44,7 @@
             box-shadow: 0 10px 40px rgba(212, 175, 55, 0.05);
             margin-bottom: 2rem;
             border: 1px solid rgba(212, 175, 55, 0.15);
-            display: block; /* Standardmäßig sichtbar */
+            display: block; 
         }
 
         h1 {
@@ -100,6 +99,11 @@
         select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+        }
+
+        select option:disabled {
+            color: #444;
+            font-style: italic;
         }
 
         .input-wrapper::after {
@@ -167,10 +171,10 @@
             box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
         }
 
-        /* Das versteckte Layout, das nur für das JPG gerendert wird */
+        /* Verstecktes Layout für JPG Generierung */
         #print-layout {
-            display: none; /* Im normalen Zustand unsichtbar */
-            width: 800px; /* Feste Breite für ein sauberes Bildformat */
+            display: none; 
+            width: 800px; 
             background-color: var(--bg-color);
             padding: 60px;
             box-sizing: border-box;
@@ -183,6 +187,9 @@
             text-align: center;
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 20px;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
         }
 
         .print-row {
@@ -200,7 +207,7 @@
         .print-room {
             font-size: 1.2rem;
             font-weight: 600;
-            color: var(--primary);
+            color: var(--text-main);
             letter-spacing: 0.08em;
             text-transform: uppercase;
             width: 45%;
@@ -208,7 +215,7 @@
 
         .print-lamp {
             font-size: 1.2rem;
-            color: var(--text-main);
+            color: var(--primary);
             text-align: right;
             width: 55%;
             font-weight: 400;
@@ -241,17 +248,21 @@
             { name: "Gitterlampe", room: "Office Alex" }
         ];
 
+        // Die exakt ausgelesenen Slots der neuen Wohnung (Blumenstr. 21)
         const newRooms = [
-            "Flur",
-            "Wohnzimmer",
-            "Office Corina",
-            "Schlafzimmer",
-            "Bad oben",
-            "Bad unten",
-            "Toilette oben",
-            "Toilette unten",
-            "Küche",
-            "Office Alex"
+            { name: "Flur", sub: "Lampe 1" },
+            { name: "Flur", sub: "Lampe 2" },
+            { name: "Wohnzimmer", sub: "Lampe" },
+            { name: "Wohnzimmer", sub: "Spot??" },
+            { name: "Office Corina", sub: "Lampe" },
+            { name: "Schlafzimmer", sub: "Lampe" },
+            { name: "Bad oben", sub: "Lampe" },
+            { name: "Bad unten", sub: "Lampe" },
+            { name: "Toilette oben", sub: "Leuchtspiegel?" },
+            { name: "Toilette unten", sub: "Leuchtspiegel?" },
+            { name: "Küche", sub: "Lampe" },
+            { name: "Office Alex", sub: "Lampe" },
+            { name: "Office Alex", sub: "Spot Holzecke?" }
         ];
 
         const container = document.getElementById('rooms-container');
@@ -262,7 +273,7 @@
 
             const label = document.createElement('label');
             label.className = 'room-label';
-            label.innerText = room;
+            label.innerText = `${room.name} (${room.sub})`;
 
             const inputWrapper = document.createElement('div');
             inputWrapper.className = 'input-wrapper';
@@ -275,15 +286,9 @@
                 } else {
                     roomDiv.classList.remove('is-selected');
                 }
+                updateDropdowns(); // Triggert die Exklusiv-Prüfung
             });
             
             const defaultOpt = document.createElement('option');
             defaultOpt.value = "";
-            defaultOpt.innerText = "-- Bitte wählen --";
-            defaultOpt.disabled = true;
-            defaultOpt.selected = true;
-            select.appendChild(defaultOpt);
-
-            const newLampOpt = document.createElement('option');
-            newLampOpt.value = "NEU";
-            newLampOpt.innerText = "✨ Neue Lampe kaufen";
+            defaultOpt.innerText = "--
