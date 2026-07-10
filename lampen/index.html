@@ -291,4 +291,143 @@
             
             const defaultOpt = document.createElement('option');
             defaultOpt.value = "";
-            defaultOpt.innerText = "--
+            defaultOpt.innerText = "-- Bitte wählen --";
+            defaultOpt.disabled = true;
+            defaultOpt.selected = true;
+            select.appendChild(defaultOpt);
+
+            const newLampOpt = document.createElement('option');
+            newLampOpt.value = "NEU";
+            newLampOpt.innerText = "✨ Neue Lampe kaufen";
+            select.appendChild(newLampOpt);
+
+            oldLamps.forEach((lamp, idx) => {
+                const opt = document.createElement('option');
+                opt.value = `${lamp.name}_${idx}`;
+                opt.innerText = `${lamp.name} (aus ${lamp.room})`;
+                select.appendChild(opt);
+            });
+
+            const indicator = document.createElement('div');
+            indicator.className = 'indicator';
+            indicator.innerHTML = '✓';
+
+            inputWrapper.appendChild(select);
+            inputWrapper.appendChild(indicator);
+            
+            roomDiv.appendChild(label);
+            roomDiv.appendChild(inputWrapper);
+            container.appendChild(roomDiv);
+        });
+
+        // Die Funktion blockiert bereits gewählte Lampen in allen anderen Dropdowns
+        function updateDropdowns() {
+            const allSelects = document.querySelectorAll('select');
+            const selectedValues = Array.from(allSelects)
+                .map(s => s.value)
+                .filter(v => v !== "" && v !== "NEU");
+
+            allSelects.forEach(select => {
+                Array.from(select.options).forEach(opt => {
+                    if (opt.value !== "" && opt.value !== "NEU") {
+                        if (selectedValues.includes(opt.value) && select.value !== opt.value) {
+                            opt.disabled = true;
+                        } else {
+                            opt.disabled = false;
+                        }
+                    }
+                });
+            });
+        }
+
+        // Interaktive Mechanik
+        const exportBtn = document.querySelector('.btn-export');
+        exportBtn.addEventListener('mouseenter', function() {
+            const maxX = window.innerWidth - this.offsetWidth;
+            const maxY = window.innerHeight - this.offsetHeight;
+            
+            const randomX = Math.max(0, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(0, Math.floor(Math.random() * maxY));
+            
+            this.style.position = 'fixed';
+            this.style.left = `${randomX}px`;
+            this.style.top = `${randomY}px`;
+            this.style.zIndex = '9999';
+            this.style.width = 'auto'; 
+        });
+
+        exportBtn.addEventListener('click', exportToJPG);
+
+        function exportToJPG() {
+            const uiArea = document.getElementById('main-container');
+            const printArea = document.getElementById('print-layout');
+            printArea.innerHTML = ''; 
+
+            const header = document.createElement('h1');
+            header.innerText = 'Lampenplanung Blumenstr. 21';
+            printArea.appendChild(header);
+
+            const roomItems = document.querySelectorAll('.room-item');
+            
+            roomItems.forEach(item => {
+                const roomName = item.querySelector('.room-label').innerText;
+                const select = item.querySelector('select');
+                const selectedText = select.options[select.selectedIndex].innerText;
+                const selectedValue = select.value;
+
+                const row = document.createElement('div');
+                row.className = 'print-row';
+                
+                const roomDiv = document.createElement('div');
+                roomDiv.className = 'print-room';
+                roomDiv.innerText = roomName;
+
+                const lampDiv = document.createElement('div');
+                lampDiv.className = 'print-lamp';
+                
+                if (selectedValue === "") {
+                    lampDiv.innerText = "— Noch offen —";
+                    lampDiv.style.color = "#555555";
+                    lampDiv.style.fontStyle = "italic";
+                } else {
+                    lampDiv.innerText = selectedText; 
+                    if(selectedValue === "NEU") {
+                        lampDiv.style.color = "#10b981"; 
+                    }
+                }
+
+                row.appendChild(roomDiv);
+                row.appendChild(lampDiv);
+                printArea.appendChild(row);
+            });
+
+            uiArea.style.display = 'none';
+            printArea.style.display = 'block';
+            
+            window.scrollTo(0, 0);
+
+            setTimeout(() => {
+                html2canvas(printArea, {
+                    scale: 2, 
+                    backgroundColor: "#0a0a0a", 
+                    logging: false,
+                    useCORS: true
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'Lampenplanung_Blumenstr21_Final.jpg';
+                    link.href = canvas.toDataURL('image/jpeg', 0.9);
+                    link.click();
+                    
+                    printArea.style.display = 'none';
+                    uiArea.style.display = 'block';
+                }).catch(err => {
+                    console.error("Fehler: ", err);
+                    alert("Export fehlgeschlagen.");
+                    printArea.style.display = 'none';
+                    uiArea.style.display = 'block';
+                });
+            }, 150); 
+        }
+    </script>
+</body>
+</html>
