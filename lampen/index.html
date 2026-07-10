@@ -7,427 +7,114 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            /* Premium Gold & Black Theme */
             --bg-color: #0a0a0a;
             --card-bg: #141414;
             --text-main: #eaeaea;
             --text-muted: #888888;
             --border-color: #2a2a2a;
-            --primary: #d4af37; 
+            --primary: #d4af37;
             --primary-hover: #b5952f;
-            --success: #10b981; 
+            --success: #10b981;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        body {
-            font-family: var(--font-family);
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 2rem 1rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 700px;
-        }
-
-        #ui-area {
-            background-color: var(--card-bg);
-            padding: 3rem 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(212, 175, 55, 0.05);
-            margin-bottom: 2rem;
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            display: block; 
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            margin-top: 0;
-            margin-bottom: 2.5rem;
-            text-align: center;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--primary);
-        }
-
-        .room-item {
-            margin-bottom: 1.5rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .room-label {
-            font-weight: 500;
-            margin-bottom: 0.6rem;
-            font-size: 0.95rem;
-            color: var(--text-main);
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        .input-wrapper {
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
-
-        select {
-            flex: 1;
-            padding: 1rem 1.25rem;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 1rem;
-            background-color: #0a0a0a;
-            color: var(--text-main);
-            cursor: pointer;
-            outline: none;
-            transition: all 0.3s ease;
-            appearance: none;
-            -webkit-appearance: none;
-        }
-
-        select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
-        }
-
-        select option:disabled {
-            color: #444;
-            font-style: italic;
-        }
-
-        .input-wrapper::after {
-            content: '▼';
-            position: absolute;
-            right: 3.5rem;
-            font-size: 0.7rem;
-            color: var(--primary);
-            pointer-events: none;
-            transition: color 0.3s ease;
-        }
-
-        .indicator {
-            width: 28px;
-            height: 28px;
-            margin-left: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background-color: var(--success);
-            color: #fff;
-            font-size: 14px;
-            font-weight: bold;
-            opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            flex-shrink: 0;
-            box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
-        }
-
-        .room-item.is-selected select {
-            border-color: var(--primary);
-            background-color: rgba(212, 175, 55, 0.02);
-        }
+        body { font-family: var(--font-family); background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 700px; }
+        #ui-area { background-color: var(--card-bg); padding: 3rem 2.5rem; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.15); margin-bottom: 2rem; }
+        h1 { font-size: 1.8rem; margin-top: 0; margin-bottom: 2.5rem; text-align: center; color: var(--primary); text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; }
+        .room-item { margin-bottom: 1.5rem; display: flex; flex-direction: column; }
+        .room-label { font-weight: 500; margin-bottom: 0.6rem; font-size: 0.95rem; color: var(--text-main); text-transform: uppercase; }
+        select { padding: 1rem; border-radius: 8px; background: #0a0a0a; color: white; border: 1px solid var(--border-color); cursor: pointer; }
+        .btn-export { background-color: var(--primary); color: #000; border: none; padding: 1.2rem; font-weight: 700; text-transform: uppercase; border-radius: 8px; cursor: pointer; width: 100%; }
         
-        .room-item.is-selected .input-wrapper::after {
-            color: var(--primary);
-        }
-
-        .room-item.is-selected .indicator {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .btn-container {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .btn-export {
-            background-color: var(--primary);
-            color: #000;
-            border: none;
-            padding: 1.2rem 2rem;
-            font-size: 1.1rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.2s;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
-        }
-
-        /* Verstecktes Layout für JPG Generierung */
-        #print-layout {
-            display: none; 
-            width: 800px; 
-            background-color: var(--bg-color);
-            padding: 60px;
-            box-sizing: border-box;
-            color: var(--text-main);
-        }
-
-        #print-layout h1 {
-            font-size: 2.2rem;
-            margin-bottom: 50px;
-            text-align: center;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 20px;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-        }
-
-        .print-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 22px 0;
-            border-bottom: 1px solid #1a1a1a;
-        }
-
-        .print-row:last-child {
-            border-bottom: none;
-        }
-
-        .print-room {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--text-main);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            width: 45%;
-        }
-
-        .print-lamp {
-            font-size: 1.2rem;
-            color: var(--primary);
-            text-align: right;
-            width: 55%;
-            font-weight: 400;
-        }
+        #print-layout { display: none; width: 800px; background-color: var(--bg-color); padding: 60px; color: var(--text-main); }
+        .print-row { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #222; }
+        .print-cat { color: var(--primary); font-weight: bold; text-transform: uppercase; }
+        .print-waste { color: #ff4444; font-weight: bold; margin-top: 40px; border-top: 2px solid #ff4444; padding-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="main-container">
-        <div id="ui-area">
-            <h1>Lampenplanung Blumenstr. 21</h1>
-            <div id="rooms-container"></div>
-        </div>
-        
-        <div class="btn-container">
-            <button class="btn-export" tabindex="0">💾 Plan als JPG speichern</button>
-        </div>
+<div class="container" id="main-container">
+    <div id="ui-area">
+        <h1>Lampenplanung Blumenstr. 21</h1>
+        <div id="rooms-container"></div>
     </div>
+    <button class="btn-export" id="btn-export">💾 Plan als JPG speichern</button>
+</div>
 
-    <div id="print-layout"></div>
+<div id="print-layout"></div>
 
-    <script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
         const oldLamps = [
-            { name: "Industrial Lampe", room: "Flur" },
-            { name: "Lampe über Esstisch", room: "Wohnzimmer" },
-            { name: "Kugellampe", room: "Wohnzimmer" },
-            { name: "Todessternlampe", room: "Office Corina" },
-            { name: "Goldröhre", room: "Schlafzimmer" },
-            { name: "Schirmlampe", room: "Küche" },
-            { name: "Gitterlampe", room: "Office Alex" }
+            { id: "lamp1", name: "Industrial Lampe", room: "Flur" },
+            { id: "lamp2", name: "Lampe über Esstisch", room: "Wohnzimmer" },
+            { id: "lamp3", name: "Kugellampe", room: "Wohnzimmer" },
+            { id: "lamp4", name: "Todessternlampe", room: "Office Corina" },
+            { id: "lamp5", name: "Goldröhre", room: "Schlafzimmer" },
+            { id: "lamp6", name: "Schirmlampe", room: "Küche" },
+            { id: "lamp7", name: "Gitterlampe", room: "Office Alex" }
         ];
 
-        // Die exakt ausgelesenen Slots der neuen Wohnung (Blumenstr. 21)
         const newRooms = [
-            { name: "Flur", sub: "Lampe 1" },
-            { name: "Flur", sub: "Lampe 2" },
-            { name: "Wohnzimmer", sub: "Lampe" },
-            { name: "Wohnzimmer", sub: "Spot??" },
-            { name: "Office Corina", sub: "Lampe" },
-            { name: "Schlafzimmer", sub: "Lampe" },
-            { name: "Bad oben", sub: "Lampe" },
-            { name: "Bad unten", sub: "Lampe" },
-            { name: "Toilette oben", sub: "Leuchtspiegel?" },
-            { name: "Toilette unten", sub: "Leuchtspiegel?" },
-            { name: "Küche", sub: "Lampe" },
-            { name: "Office Alex", sub: "Lampe" },
+            { name: "Flur", sub: "Lampe 1" }, { name: "Flur", sub: "Lampe 2" },
+            { name: "Wohnzimmer", sub: "Lampe" }, { name: "Wohnzimmer", sub: "Spot??" },
+            { name: "Office Corina", sub: "Lampe" }, { name: "Schlafzimmer", sub: "Lampe" },
+            { name: "Bad oben", sub: "Lampe" }, { name: "Bad unten", sub: "Lampe" },
+            { name: "Toilette oben", sub: "Leuchtspiegel?" }, { name: "Toilette unten", sub: "Leuchtspiegel?" },
+            { name: "Küche", sub: "Lampe" }, { name: "Office Alex", sub: "Lampe" },
             { name: "Office Alex", sub: "Spot Holzecke?" }
         ];
 
         const container = document.getElementById('rooms-container');
-
-        newRooms.forEach((room) => {
-            const roomDiv = document.createElement('div');
-            roomDiv.className = 'room-item';
-
-            const label = document.createElement('label');
-            label.className = 'room-label';
-            label.innerText = `${room.name} (${room.sub})`;
-
-            const inputWrapper = document.createElement('div');
-            inputWrapper.className = 'input-wrapper';
-
-            const select = document.createElement('select');
-            
-            select.addEventListener('change', function() {
-                if(this.value !== "") {
-                    roomDiv.classList.add('is-selected');
-                } else {
-                    roomDiv.classList.remove('is-selected');
-                }
-                updateDropdowns(); // Triggert die Exklusiv-Prüfung
-            });
-            
-            const defaultOpt = document.createElement('option');
-            defaultOpt.value = "";
-            defaultOpt.innerText = "-- Bitte wählen --";
-            defaultOpt.disabled = true;
-            defaultOpt.selected = true;
-            select.appendChild(defaultOpt);
-
-            const newLampOpt = document.createElement('option');
-            newLampOpt.value = "NEU";
-            newLampOpt.innerText = "✨ Neue Lampe kaufen";
-            select.appendChild(newLampOpt);
-
-            oldLamps.forEach((lamp, idx) => {
-                const opt = document.createElement('option');
-                opt.value = `${lamp.name}_${idx}`;
-                opt.innerText = `${lamp.name} (aus ${lamp.room})`;
-                select.appendChild(opt);
-            });
-
-            const indicator = document.createElement('div');
-            indicator.className = 'indicator';
-            indicator.innerHTML = '✓';
-
-            inputWrapper.appendChild(select);
-            inputWrapper.appendChild(indicator);
-            
-            roomDiv.appendChild(label);
-            roomDiv.appendChild(inputWrapper);
-            container.appendChild(roomDiv);
+        newRooms.forEach(room => {
+            const div = document.createElement('div');
+            div.className = 'room-item';
+            div.innerHTML = `<label class="room-label">${room.name} (${room.sub})</label>
+                             <select class="lamp-select"><option value="">-- Bitte wählen --</option><option value="NEU">✨ Neue Lampe kaufen</option>
+                             ${oldLamps.map(l => `<option value="${l.id}">${l.name} (aus ${l.room})</option>`).join('')}</select>`;
+            container.appendChild(div);
         });
 
-        // Die Funktion blockiert bereits gewählte Lampen in allen anderen Dropdowns
-        function updateDropdowns() {
-            const allSelects = document.querySelectorAll('select');
-            const selectedValues = Array.from(allSelects)
-                .map(s => s.value)
-                .filter(v => v !== "" && v !== "NEU");
-
-            allSelects.forEach(select => {
-                Array.from(select.options).forEach(opt => {
-                    if (opt.value !== "" && opt.value !== "NEU") {
-                        if (selectedValues.includes(opt.value) && select.value !== opt.value) {
-                            opt.disabled = true;
-                        } else {
-                            opt.disabled = false;
-                        }
-                    }
-                });
-            });
-        }
-
-        // Interaktive Mechanik
-        const exportBtn = document.querySelector('.btn-export');
-        exportBtn.addEventListener('mouseenter', function() {
-            const maxX = window.innerWidth - this.offsetWidth;
-            const maxY = window.innerHeight - this.offsetHeight;
-            
-            const randomX = Math.max(0, Math.floor(Math.random() * maxX));
-            const randomY = Math.max(0, Math.floor(Math.random() * maxY));
-            
-            this.style.position = 'fixed';
-            this.style.left = `${randomX}px`;
-            this.style.top = `${randomY}px`;
-            this.style.zIndex = '9999';
-            this.style.width = 'auto'; 
-        });
-
-        exportBtn.addEventListener('click', exportToJPG);
-
-        function exportToJPG() {
+        document.getElementById('btn-export').addEventListener('click', () => {
             const uiArea = document.getElementById('main-container');
             const printArea = document.getElementById('print-layout');
-            printArea.innerHTML = ''; 
+            printArea.innerHTML = '<h1>Lampenplanung Blumenstr. 21</h1>';
 
-            const header = document.createElement('h1');
-            header.innerText = 'Lampenplanung Blumenstr. 21';
-            printArea.appendChild(header);
-
-            const roomItems = document.querySelectorAll('.room-item');
-            
-            roomItems.forEach(item => {
-                const roomName = item.querySelector('.room-label').innerText;
-                const select = item.querySelector('select');
-                const selectedText = select.options[select.selectedIndex].innerText;
-                const selectedValue = select.value;
-
+            const usedLampIds = [];
+            document.querySelectorAll('.lamp-select').forEach((sel, i) => {
                 const row = document.createElement('div');
                 row.className = 'print-row';
-                
-                const roomDiv = document.createElement('div');
-                roomDiv.className = 'print-room';
-                roomDiv.innerText = roomName;
+                const roomName = newRooms[i].name + " (" + newRooms[i].sub + ")";
+                const val = sel.value;
+                const text = sel.options[sel.selectedIndex].text;
 
-                const lampDiv = document.createElement('div');
-                lampDiv.className = 'print-lamp';
-                
-                if (selectedValue === "") {
-                    lampDiv.innerText = "— Noch offen —";
-                    lampDiv.style.color = "#555555";
-                    lampDiv.style.fontStyle = "italic";
-                } else {
-                    lampDiv.innerText = selectedText; 
-                    if(selectedValue === "NEU") {
-                        lampDiv.style.color = "#10b981"; 
-                    }
-                }
-
-                row.appendChild(roomDiv);
-                row.appendChild(lampDiv);
+                if (val && val !== "NEU") usedLampIds.push(val);
+                row.innerHTML = `<span class="print-cat">${roomName}</span><span>${val ? text : "— offen —"}</span>`;
                 printArea.appendChild(row);
             });
 
+            // Restliche Lampen finden
+            const unused = oldLamps.filter(l => !usedLampIds.includes(l.id));
+            if (unused.length > 0) {
+                printArea.innerHTML += `<div class="print-waste"><h3>Wegwerfen / Verkaufen</h3></div>` + 
+                unused.map(l => `<div class="print-row"><span>${l.name} (${l.room})</span></div>`).join('');
+            }
+
             uiArea.style.display = 'none';
             printArea.style.display = 'block';
-            
-            window.scrollTo(0, 0);
 
-            setTimeout(() => {
-                html2canvas(printArea, {
-                    scale: 2, 
-                    backgroundColor: "#0a0a0a", 
-                    logging: false,
-                    useCORS: true
-                }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = 'Lampenplanung_Blumenstr21_Final.jpg';
-                    link.href = canvas.toDataURL('image/jpeg', 0.9);
-                    link.click();
-                    
-                    printArea.style.display = 'none';
-                    uiArea.style.display = 'block';
-                }).catch(err => {
-                    console.error("Fehler: ", err);
-                    alert("Export fehlgeschlagen.");
-                    printArea.style.display = 'none';
-                    uiArea.style.display = 'block';
-                });
-            }, 150); 
-        }
-    </script>
+            html2canvas(printArea, { scale: 2, backgroundColor: "#0a0a0a" }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Lampenplan_Final.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+                printArea.style.display = 'none';
+                uiArea.style.display = 'block';
+            });
+        });
+    });
+</script>
 </body>
 </html>
