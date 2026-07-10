@@ -25,6 +25,7 @@
         .room-item { margin-bottom: 1.5rem; }
         .room-label { font-weight: 500; font-size: 0.95rem; text-transform: uppercase; display: block; margin-bottom: 0.5rem; }
         select, input { padding: 0.8rem; border-radius: 6px; background: #000; color: white; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; margin-bottom: 5px; }
+        select:disabled { opacity: 0.4; cursor: not-allowed; }
         .input-group { display: none; }
         
         .btn-export { background-color: var(--primary); color: #000; border: none; padding: 1.2rem; font-weight: 700; text-transform: uppercase; border-radius: 8px; cursor: pointer; width: 100%; }
@@ -113,6 +114,7 @@
             const currentVal = select.value;
             Array.from(select.options).forEach(opt => {
                 if (opt.value === "" || opt.value === "NEU") return;
+                // Deaktivieren, wenn schon in anderem Dropdown gewählt
                 opt.disabled = selectedValues.includes(opt.value) && opt.value !== currentVal;
             });
         });
