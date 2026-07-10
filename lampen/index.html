@@ -11,7 +11,7 @@
             --card-bg: #141414;
             --text-main: #eaeaea;
             --primary: #d4af37;
-            --primary-hover: #b5952f;
+            --success: #10b981;
             --border-color: #2a2a2a;
         }
 
@@ -25,10 +25,13 @@
         .room-item { margin-bottom: 1.5rem; position: relative; }
         .room-label { font-weight: 500; font-size: 0.95rem; text-transform: uppercase; display: block; margin-bottom: 0.5rem; }
         
-        /* Reset Button Style */
         .reset-btn { position: absolute; top: 0; right: 0; cursor: pointer; color: #ff4444; font-size: 1.5rem; font-weight: bold; line-height: 1; }
         
-        select, input { padding: 0.8rem; border-radius: 6px; background: #000; color: white; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; margin-bottom: 5px; }
+        select, input { padding: 0.8rem; border-radius: 6px; background: #000; color: white; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; margin-bottom: 5px; transition: border 0.3s; }
+        
+        /* Grüne Umrandung bei Auswahl */
+        select.filled { border: 2px solid var(--success); }
+        
         select:disabled { opacity: 0.4; cursor: not-allowed; }
         .input-group { display: none; }
         
@@ -95,10 +98,12 @@
                 sel.value = savedData[index].val;
                 inp.value = savedData[index].wish || "";
                 if (sel.value === "NEU") inpGroup.style.display = "block";
+                if (sel.value !== "") sel.classList.add('filled'); // Grüne Umrandung bei Start
             }
 
             sel.addEventListener('change', () => {
                 inpGroup.style.display = sel.value === "NEU" ? "block" : "none";
+                sel.classList.toggle('filled', sel.value !== "");
                 updateDropdowns();
             });
             inp.addEventListener('input', updateDropdowns);
@@ -106,10 +111,11 @@
         updateDropdowns();
     }
 
-    // Reset Funktion für das "X"
     function resetRoom(index) {
         const row = document.querySelectorAll('.room-item')[index];
-        row.querySelector('.lamp-select').value = "";
+        const sel = row.querySelector('.lamp-select');
+        sel.value = "";
+        sel.classList.remove('filled');
         row.querySelector('.wish-input').value = "";
         row.querySelector('.input-group').style.display = "none";
         updateDropdowns();
@@ -138,35 +144,26 @@
         const uiArea = document.getElementById('main-container');
         const printArea = document.getElementById('print-layout');
         printArea.innerHTML = '<h1>💡 Lampenplanung</h1>';
-
         const usedLampIds = [];
         document.querySelectorAll('.lamp-select').forEach((sel, i) => {
-            const row = document.createElement('div');
-            row.className = 'print-row';
+            const row = document.createElement('div'); row.className = 'print-row';
             const roomName = newRooms[i].name + " (" + newRooms[i].sub + ")";
             const wish = document.querySelectorAll('.wish-input')[i].value;
             const text = sel.value === "NEU" ? `✨ ${wish}` : (sel.value ? sel.options[sel.selectedIndex].text : "— offen —");
-            
             if (sel.value && sel.value !== "NEU") usedLampIds.push(sel.value);
             row.innerHTML = `<span class="print-cat">${roomName}</span><span>${text}</span>`;
             printArea.appendChild(row);
         });
-
         const unused = oldLamps.filter(l => !usedLampIds.includes(l.id));
         if (unused.length > 0) {
             printArea.innerHTML += `<div class="print-row" style="color:red; margin-top:20px;"><b>WEGWERFEN / VERKAUFEN:</b></div>` + 
             unused.map(l => `<div class="print-row"><span>${l.name} (${l.room})</span></div>`).join('');
         }
-
-        uiArea.style.display = 'none';
-        printArea.style.display = 'block';
+        uiArea.style.display = 'none'; printArea.style.display = 'block';
         html2canvas(printArea, { scale: 2, backgroundColor: "#0a0a0a" }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = 'Lampenplan_Final.jpg';
-            link.href = canvas.toDataURL('image/jpeg', 0.9);
-            link.click();
-            printArea.style.display = 'none';
-            uiArea.style.display = 'block';
+            const link = document.createElement('a'); link.download = 'Lampenplan_Final.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.9); link.click();
+            printArea.style.display = 'none'; uiArea.style.display = 'block';
         });
     });
 
