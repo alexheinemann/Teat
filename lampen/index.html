@@ -7,90 +7,162 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --primary: #2563eb;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
+            /* Modern Dark Theme Colors */
+            --bg-color: #0f1115;
+            --card-bg: #1a1d24;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
             padding: 2rem 1rem;
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
         }
 
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 700px;
         }
 
-        /* Dieser Bereich wird exportiert */
+        /* Der Bereich der als JPG exportiert wird */
         #export-area {
             background-color: var(--card-bg);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            padding: 3rem 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
             margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         h1 {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             margin-top: 0;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2.5rem;
             text-align: center;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .room-item {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1.5rem;
             display: flex;
             flex-direction: column;
         }
 
         .room-label {
             font-weight: 600;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.6rem;
             font-size: 1rem;
+            color: var(--text-main);
+            letter-spacing: 0.02em;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            position: relative;
         }
 
         select {
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
+            flex: 1;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
             font-size: 1rem;
-            background-color: #fff;
+            background-color: #0f1115;
+            color: var(--text-main);
             cursor: pointer;
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
         }
 
         select:focus {
             border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Dropdown Pfeil */
+        .input-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 3.5rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+
+        /* Der grüne Indikator (Checkmark) */
+        .indicator {
+            width: 28px;
+            height: 28px;
+            margin-left: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--success);
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            flex-shrink: 0;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Status: Ausgewählt */
+        .room-item.is-selected select {
+            border-color: var(--success);
+            background-color: rgba(16, 185, 129, 0.03);
+        }
+        
+        .room-item.is-selected .input-wrapper::after {
+            color: var(--success);
+        }
+
+        .room-item.is-selected .indicator {
+            opacity: 1;
+            transform: scale(1);
         }
 
         .btn-export {
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 1rem 2rem;
-            font-size: 1rem;
+            padding: 1.2rem 2rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             width: 100%;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .btn-export:hover {
-            background-color: #1d4ed8;
+            background-color: var(--primary-hover);
+        }
+        
+        .btn-export:active {
+            transform: translateY(2px);
         }
     </style>
 </head>
@@ -102,32 +174,41 @@
             <div id="rooms-container"></div>
         </div>
         
-        <button class="btn-export" onclick="exportToJPG()">Als JPG speichern</button>
+        <button class="btn-export" onclick="exportToJPG()">💾 Plan als JPG speichern</button>
     </div>
 
     <script>
-        // Datenbasis
+        // Vollständige Datenbasis der alten Wohnung (Lorcherstr. 13)
         const oldLamps = [
             { name: "Industrial Lampe", room: "Flur" },
+            { name: "Lampe?", room: "Flur" },
+            { name: "Lampe?", room: "Flur" },
+            { name: "Lampe über Esstisch", room: "Wohnzimmer" },
             { name: "Kugellampe", room: "Wohnzimmer" },
+            { name: "Lampe?", room: "Wohnzimmer" },
+            { name: "Spot??", room: "Wohnzimmer" },
             { name: "Todessternlampe", room: "Office Corina" },
+            { name: "Lampe?", room: "Office Corina" },
             { name: "Goldröhre", room: "Schlafzimmer" },
+            { name: "Lampe?", room: "Schlafzimmer" },
             { name: "Schirmlampe", room: "Küche" },
-            { name: "Gitterlampe", room: "Office Alex" }
+            { name: "Lampe?", room: "Küche" },
+            { name: "Gitterlampe", room: "Office Alex" },
+            { name: "Lampe?", room: "Office Alex" }
         ];
 
+        // Bereinigte Überkategorien der neuen Wohnung (Blumenstr. 21)
         const newRooms = [
             "Flur",
-            "Wohnzimmer (Lampe über Esstisch)",
-            "Wohnzimmer (Spot??)",
+            "Wohnzimmer",
             "Office Corina",
             "Schlafzimmer",
             "Bad oben",
             "Bad unten",
-            "Toilette oben (Leuchtspiegel?)",
-            "Toilette unten (Leuchtspiegel?)",
+            "Toilette oben",
+            "Toilette unten",
             "Küche",
-            "Office Alex (Spot Holzecke?)"
+            "Office Alex"
         ];
 
         // UI generieren
@@ -141,7 +222,19 @@
             label.className = 'room-label';
             label.innerText = room;
 
+            const inputWrapper = document.createElement('div');
+            inputWrapper.className = 'input-wrapper';
+
             const select = document.createElement('select');
+            
+            // Event-Listener für den grünen Indikator
+            select.addEventListener('change', function() {
+                if(this.value !== "") {
+                    roomDiv.classList.add('is-selected');
+                } else {
+                    roomDiv.classList.remove('is-selected');
+                }
+            });
             
             // Standard-Optionen
             const defaultOpt = document.createElement('option');
@@ -156,36 +249,54 @@
             newLampOpt.innerText = "✨ Neue Lampe kaufen";
             select.appendChild(newLampOpt);
 
-            // Bestehende Lampen als Optionen hinzufügen
-            oldLamps.forEach(lamp => {
+            // Bestehende Lampen als Optionen
+            oldLamps.forEach((lamp, idx) => {
                 const opt = document.createElement('option');
-                opt.value = lamp.name;
+                opt.value = `${lamp.name}_${idx}`;
                 opt.innerText = `${lamp.name} (${lamp.room})`;
                 select.appendChild(opt);
             });
 
+            // Grüner Indikator HTML (Checkmark)
+            const indicator = document.createElement('div');
+            indicator.className = 'indicator';
+            indicator.innerHTML = '✓';
+
+            inputWrapper.appendChild(select);
+            inputWrapper.appendChild(indicator);
+            
             roomDiv.appendChild(label);
-            roomDiv.appendChild(select);
+            roomDiv.appendChild(inputWrapper);
             container.appendChild(roomDiv);
         });
 
         // JPG Export Logik
         function exportToJPG() {
             const exportArea = document.getElementById('export-area');
+            const button = document.querySelector('.btn-export');
             
-            // html2canvas Aufruf
+            const originalText = button.innerText;
+            button.innerText = "⏳ Generiere JPG...";
+            button.style.opacity = "0.7";
+            
             html2canvas(exportArea, {
-                scale: 2, // Höhere Auflösung für besseres Bild
-                backgroundColor: "#f8fafc" // Entspricht dem Body Background
+                scale: 2, // Hochauflösend
+                backgroundColor: "#1a1d24", // Match mit Card-Background
+                logging: false,
+                useCORS: true
             }).then(canvas => {
-                // Canvas in Bild umwandeln
                 const link = document.createElement('a');
                 link.download = 'Lampenplanung_Blumenstr21.jpg';
                 link.href = canvas.toDataURL('image/jpeg', 0.9);
                 link.click();
+                
+                button.innerText = originalText;
+                button.style.opacity = "1";
             }).catch(err => {
-                console.error("Fehler beim Erstellen des Bildes: ", err);
-                alert("Export fehlgeschlagen. Bitte versuche es erneut.");
+                console.error("Fehler: ", err);
+                alert("Export fehlgeschlagen.");
+                button.innerText = originalText;
+                button.style.opacity = "1";
             });
         }
     </script>
