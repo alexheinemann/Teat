@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lampenplanung Blumenstr. 21</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* Dieser Bereich wird exportiert */
+        #export-area {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .room-item {
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .room-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        select {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: #fff;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-export {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+        .btn-export:hover {
+            background-color: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="export-area">
+            <h1>Lampenplanung Blumenstr. 21</h1>
+            <div id="rooms-container"></div>
+        </div>
+        
+        <button class="btn-export" onclick="exportToJPG()">Als JPG speichern</button>
+    </div>
+
+    <script>
+        // Datenbasis
+        const oldLamps = [
+            { name: "Industrial Lampe", room: "Flur" },
+            { name: "Kugellampe", room: "Wohnzimmer" },
+            { name: "Todessternlampe", room: "Office Corina" },
+            { name: "Goldröhre", room: "Schlafzimmer" },
+            { name: "Schirmlampe", room: "Küche" },
+            { name: "Gitterlampe", room: "Office Alex" }
+        ];
+
+        const newRooms = [
+            "Flur",
+            "Wohnzimmer (Lampe über Esstisch)",
+            "Wohnzimmer (Spot??)",
+            "Office Corina",
+            "Schlafzimmer",
+            "Bad oben",
+            "Bad unten",
+            "Toilette oben (Leuchtspiegel?)",
+            "Toilette unten (Leuchtspiegel?)",
+            "Küche",
+            "Office Alex (Spot Holzecke?)"
+        ];
+
+        // UI generieren
+        const container = document.getElementById('rooms-container');
+
+        newRooms.forEach((room, index) => {
+            const roomDiv = document.createElement('div');
+            roomDiv.className = 'room-item';
+
+            const label = document.createElement('label');
+            label.className = 'room-label';
+            label.innerText = room;
+
+            const select = document.createElement('select');
+            
+            // Standard-Optionen
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = "";
+            defaultOpt.innerText = "-- Bitte wählen --";
+            defaultOpt.disabled = true;
+            defaultOpt.selected = true;
+            select.appendChild(defaultOpt);
+
+            const newLampOpt = document.createElement('option');
+            newLampOpt.value = "NEU";
+            newLampOpt.innerText = "✨ Neue Lampe kaufen";
+            select.appendChild(newLampOpt);
+
+            // Bestehende Lampen als Optionen hinzufügen
+            oldLamps.forEach(lamp => {
+                const opt = document.createElement('option');
+                opt.value = lamp.name;
+                opt.innerText = `${lamp.name} (${lamp.room})`;
+                select.appendChild(opt);
+            });
+
+            roomDiv.appendChild(label);
+            roomDiv.appendChild(select);
+            container.appendChild(roomDiv);
+        });
+
+        // JPG Export Logik
+        function exportToJPG() {
+            const exportArea = document.getElementById('export-area');
+            
+            // html2canvas Aufruf
+            html2canvas(exportArea, {
+                scale: 2, // Höhere Auflösung für besseres Bild
+                backgroundColor: "#f8fafc" // Entspricht dem Body Background
+            }).then(canvas => {
+                // Canvas in Bild umwandeln
+                const link = document.createElement('a');
+                link.download = 'Lampenplanung_Blumenstr21.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+            }).catch(err => {
+                console.error("Fehler beim Erstellen des Bildes: ", err);
+                alert("Export fehlgeschlagen. Bitte versuche es erneut.");
+            });
+        }
+    </script>
+</body>
+</html>
