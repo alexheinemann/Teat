@@ -10,34 +10,35 @@
             --bg-color: #0a0a0a;
             --card-bg: #141414;
             --text-main: #eaeaea;
-            --text-muted: #888888;
-            --border-color: #2a2a2a;
             --primary: #d4af37;
             --primary-hover: #b5952f;
-            --success: #10b981;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --border-color: #2a2a2a;
         }
 
-        body { font-family: var(--font-family); background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .container { width: 100%; max-width: 700px; }
         #ui-area { background-color: var(--card-bg); padding: 3rem 2.5rem; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.15); margin-bottom: 2rem; }
-        h1 { font-size: 1.8rem; margin-top: 0; margin-bottom: 2.5rem; text-align: center; color: var(--primary); text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; }
-        .room-item { margin-bottom: 1.5rem; display: flex; flex-direction: column; }
-        .room-label { font-weight: 500; margin-bottom: 0.6rem; font-size: 0.95rem; color: var(--text-main); text-transform: uppercase; }
-        select, input { padding: 1rem; border-radius: 8px; background: #0a0a0a; color: white; border: 1px solid var(--border-color); width: 100%; margin-top: 0.5rem; box-sizing: border-box; }
-        .input-group { margin-top: 0.5rem; display: none; }
-        .btn-export { background-color: var(--primary); color: #000; border: none; padding: 1.2rem; font-weight: 700; text-transform: uppercase; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 1rem; }
         
-        #print-layout { display: none; width: 800px; background-color: var(--bg-color); padding: 60px; color: var(--text-main); }
-        .print-row { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #222; }
-        .print-cat { color: var(--primary); font-weight: bold; text-transform: uppercase; }
+        h1 { font-size: 1.6rem; margin-top: 0; margin-bottom: 2rem; text-align: center; color: var(--primary); text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 15px; }
+        .logo { font-size: 2.5rem; }
+        
+        .room-item { margin-bottom: 1.5rem; }
+        .room-label { font-weight: 500; font-size: 0.95rem; text-transform: uppercase; display: block; margin-bottom: 0.5rem; }
+        select, input { padding: 0.8rem; border-radius: 6px; background: #000; color: white; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; margin-bottom: 5px; }
+        .input-group { display: none; }
+        
+        .btn-export { background-color: var(--primary); color: #000; border: none; padding: 1.2rem; font-weight: 700; text-transform: uppercase; border-radius: 8px; cursor: pointer; width: 100%; }
+        
+        #print-layout { display: none; width: 800px; background-color: #0a0a0a; padding: 60px; color: #eaeaea; }
+        .print-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #222; }
+        .print-cat { color: var(--primary); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container" id="main-container">
     <div id="ui-area">
-        <h1>Lampenplanung Blumenstr. 21</h1>
+        <h1><span class="logo">💡</span> Lampenplanung Blumenstr. 21</h1>
         <div id="rooms-container"></div>
     </div>
     <button class="btn-export" id="btn-export">💾 Plan als JPG speichern</button>
@@ -46,27 +47,27 @@
 <div id="print-layout"></div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const oldLamps = [
-            { id: "lamp1", name: "Industrial Lampe", room: "Flur" },
-            { id: "lamp2", name: "Lampe über Esstisch", room: "Wohnzimmer" },
-            { id: "lamp3", name: "Kugellampe", room: "Wohnzimmer" },
-            { id: "lamp4", name: "Todessternlampe", room: "Office Corina" },
-            { id: "lamp5", name: "Goldröhre", room: "Schlafzimmer" },
-            { id: "lamp6", name: "Schirmlampe", room: "Küche" },
-            { id: "lamp7", name: "Gitterlampe", room: "Office Alex" }
-        ];
+    const oldLamps = [
+        { id: "lamp1", name: "Industrial Lampe", room: "Flur" },
+        { id: "lamp2", name: "Lampe über Esstisch", room: "Wohnzimmer" },
+        { id: "lamp3", name: "Kugellampe", room: "Wohnzimmer" },
+        { id: "lamp4", name: "Todessternlampe", room: "Office Corina" },
+        { id: "lamp5", name: "Goldröhre", room: "Schlafzimmer" },
+        { id: "lamp6", name: "Schirmlampe", room: "Küche" },
+        { id: "lamp7", name: "Gitterlampe", room: "Office Alex" }
+    ];
 
-        const newRooms = [
-            { name: "Flur", sub: "Lampe 1" }, { name: "Flur", sub: "Lampe 2" },
-            { name: "Wohnzimmer", sub: "Lampe" }, { name: "Wohnzimmer", sub: "Spot??" },
-            { name: "Office Corina", sub: "Lampe" }, { name: "Schlafzimmer", sub: "Lampe" },
-            { name: "Bad oben", sub: "Lampe" }, { name: "Bad unten", sub: "Lampe" },
-            { name: "Toilette oben", sub: "Leuchtspiegel?" }, { name: "Toilette unten", sub: "Leuchtspiegel?" },
-            { name: "Küche", sub: "Lampe" }, { name: "Office Alex", sub: "Lampe" },
-            { name: "Office Alex", sub: "Spot Holzecke?" }
-        ];
+    const newRooms = [
+        { name: "Flur", sub: "Lampe 1" }, { name: "Flur", sub: "Lampe 2" },
+        { name: "Wohnzimmer", sub: "Lampe" }, { name: "Wohnzimmer", sub: "Spot??" },
+        { name: "Office Corina", sub: "Lampe" }, { name: "Schlafzimmer", sub: "Lampe" },
+        { name: "Bad oben", sub: "Lampe" }, { name: "Bad unten", sub: "Lampe" },
+        { name: "Toilette oben", sub: "Leuchtspiegel?" }, { name: "Toilette unten", sub: "Leuchtspiegel?" },
+        { name: "Küche", sub: "Lampe" }, { name: "Office Alex", sub: "Lampe" },
+        { name: "Office Alex", sub: "Spot Holzecke?" }
+    ];
 
+    function init() {
         const container = document.getElementById('rooms-container');
         const savedData = JSON.parse(localStorage.getItem('lampPlan')) || {};
 
@@ -83,69 +84,77 @@
             const inpGroup = div.querySelector('.input-group');
             const inp = div.querySelector('.wish-input');
 
-            if (savedData[index]) sel.value = savedData[index].val;
-            if (savedData[index] && savedData[index].wish) { inp.value = savedData[index].wish; }
-            if (sel.value === "NEU") inpGroup.style.display = "block";
+            if (savedData[index]) {
+                sel.value = savedData[index].val;
+                inp.value = savedData[index].wish || "";
+                if (sel.value === "NEU") inpGroup.style.display = "block";
+            }
 
             sel.addEventListener('change', () => {
                 inpGroup.style.display = sel.value === "NEU" ? "block" : "none";
                 updateDropdowns();
             });
-            
             inp.addEventListener('input', updateDropdowns);
         });
+        updateDropdowns();
+    }
 
-        const updateDropdowns = () => {
-            const data = {};
-            const selectedValues = [];
-            document.querySelectorAll('.lamp-select').forEach((s, i) => {
-                data[i] = { val: s.value, wish: document.querySelectorAll('.wish-input')[i].value };
-                if (s.value !== "" && s.value !== "NEU") selectedValues.push(s.value);
-            });
-            localStorage.setItem('lampPlan', JSON.stringify(data));
-            
-            document.querySelectorAll('.lamp-select').forEach(select => {
-                const currentVal = select.value;
-                Array.from(select.options).forEach(opt => {
-                    if (opt.value === "" || opt.value === "NEU") return;
-                    opt.disabled = selectedValues.includes(opt.value) && opt.value !== currentVal;
-                });
-            });
-        };
-
-        document.getElementById('btn-export').addEventListener('click', () => {
-            const uiArea = document.getElementById('main-container');
-            const printArea = document.getElementById('print-layout');
-            printArea.innerHTML = '<h1>Lampenplanung Blumenstr. 21</h1>';
-
-            const usedLampIds = [];
-            document.querySelectorAll('.lamp-select').forEach((sel, i) => {
-                const roomName = newRooms[i].name + " (" + newRooms[i].sub + ")";
-                const wish = document.querySelectorAll('.wish-input')[i].value;
-                let text = sel.value === "NEU" ? `✨ Wunsch: ${wish}` : (sel.value ? sel.options[sel.selectedIndex].text : "— offen —");
-                if (sel.value && sel.value !== "NEU") usedLampIds.push(sel.value);
-                printArea.innerHTML += `<div class="print-row"><span class="print-cat">${roomName}</span><span>${text}</span></div>`;
-            });
-
-            const unused = oldLamps.filter(l => !usedLampIds.includes(l.id));
-            if (unused.length > 0) {
-                printArea.innerHTML += `<div class="print-waste"><h3>Wegwerfen / Verkaufen</h3></div>` + 
-                unused.map(l => `<div class="print-row"><span>${l.name} (${l.room})</span></div>`).join('');
-            }
-
-            uiArea.style.display = 'none';
-            printArea.style.display = 'block';
-            html2canvas(printArea, { scale: 2, backgroundColor: "#0a0a0a" }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'Lampenplan_Final.jpg';
-                link.href = canvas.toDataURL('image/jpeg', 0.9);
-                link.click();
-                printArea.style.display = 'none';
-                uiArea.style.display = 'block';
+    function updateDropdowns() {
+        const selects = document.querySelectorAll('.lamp-select');
+        const data = {};
+        const selectedValues = Array.from(selects).map((s, i) => {
+            data[i] = { val: s.value, wish: document.querySelectorAll('.wish-input')[i].value };
+            return s.value;
+        }).filter(v => v !== "" && v !== "NEU");
+        
+        localStorage.setItem('lampPlan', JSON.stringify(data));
+        
+        selects.forEach(select => {
+            const currentVal = select.value;
+            Array.from(select.options).forEach(opt => {
+                if (opt.value === "" || opt.value === "NEU") return;
+                opt.disabled = selectedValues.includes(opt.value) && opt.value !== currentVal;
             });
         });
-        updateDropdowns();
+    }
+
+    document.getElementById('btn-export').addEventListener('click', () => {
+        const uiArea = document.getElementById('main-container');
+        const printArea = document.getElementById('print-layout');
+        printArea.innerHTML = '<h1>💡 Lampenplanung</h1>';
+
+        const usedLampIds = [];
+        document.querySelectorAll('.lamp-select').forEach((sel, i) => {
+            const row = document.createElement('div');
+            row.className = 'print-row';
+            const roomName = newRooms[i].name + " (" + newRooms[i].sub + ")";
+            const wish = document.querySelectorAll('.wish-input')[i].value;
+            const text = sel.value === "NEU" ? `✨ ${wish}` : (sel.value ? sel.options[sel.selectedIndex].text : "— offen —");
+            
+            if (sel.value && sel.value !== "NEU") usedLampIds.push(sel.value);
+            row.innerHTML = `<span class="print-cat">${roomName}</span><span>${text}</span>`;
+            printArea.appendChild(row);
+        });
+
+        const unused = oldLamps.filter(l => !usedLampIds.includes(l.id));
+        if (unused.length > 0) {
+            printArea.innerHTML += `<div class="print-row" style="color:red; margin-top:20px;"><b>WEGWERFEN / VERKAUFEN:</b></div>` + 
+            unused.map(l => `<div class="print-row"><span>${l.name} (${l.room})</span></div>`).join('');
+        }
+
+        uiArea.style.display = 'none';
+        printArea.style.display = 'block';
+        html2canvas(printArea, { scale: 2, backgroundColor: "#0a0a0a" }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'Lampenplan_Final.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+            printArea.style.display = 'none';
+            uiArea.style.display = 'block';
+        });
     });
+
+    window.onload = init;
 </script>
 </body>
 </html>
