@@ -7,7 +7,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            /* Modern Dark Theme Colors */
             --bg-color: #0f1115;
             --card-bg: #1a1d24;
             --text-main: #f8fafc;
@@ -29,6 +28,7 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .container {
@@ -36,7 +36,6 @@
             max-width: 700px;
         }
 
-        /* Der Bereich der als JPG exportiert wird */
         #export-area {
             background-color: var(--card-bg);
             padding: 3rem 2.5rem;
@@ -97,7 +96,6 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
 
-        /* Dropdown Pfeil */
         .input-wrapper::after {
             content: '▼';
             position: absolute;
@@ -108,7 +106,6 @@
             transition: color 0.3s ease;
         }
 
-        /* Der grüne Indikator (Checkmark) */
         .indicator {
             width: 28px;
             height: 28px;
@@ -128,7 +125,6 @@
             box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
         }
 
-        /* Status: Ausgewählt */
         .room-item.is-selected select {
             border-color: var(--success);
             background-color: rgba(16, 185, 129, 0.03);
@@ -153,16 +149,12 @@
             border-radius: 12px;
             cursor: pointer;
             width: 100%;
-            transition: background-color 0.2s, transform 0.1s;
+            transition: background-color 0.2s;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .btn-export:hover {
             background-color: var(--primary-hover);
-        }
-        
-        .btn-export:active {
-            transform: translateY(2px);
         }
     </style>
 </head>
@@ -178,26 +170,18 @@
     </div>
 
     <script>
-        // Vollständige Datenbasis der alten Wohnung (Lorcherstr. 13)
+        // Bereinigter Bestand der alten Wohnung (Lorcherstr. 13)
         const oldLamps = [
             { name: "Industrial Lampe", room: "Flur" },
-            { name: "Lampe?", room: "Flur" },
-            { name: "Lampe?", room: "Flur" },
             { name: "Lampe über Esstisch", room: "Wohnzimmer" },
             { name: "Kugellampe", room: "Wohnzimmer" },
-            { name: "Lampe?", room: "Wohnzimmer" },
-            { name: "Spot??", room: "Wohnzimmer" },
             { name: "Todessternlampe", room: "Office Corina" },
-            { name: "Lampe?", room: "Office Corina" },
             { name: "Goldröhre", room: "Schlafzimmer" },
-            { name: "Lampe?", room: "Schlafzimmer" },
             { name: "Schirmlampe", room: "Küche" },
-            { name: "Lampe?", room: "Küche" },
-            { name: "Gitterlampe", room: "Office Alex" },
-            { name: "Lampe?", room: "Office Alex" }
+            { name: "Gitterlampe", room: "Office Alex" }
         ];
 
-        // Bereinigte Überkategorien der neuen Wohnung (Blumenstr. 21)
+        // Überkategorien der neuen Wohnung (Blumenstr. 21)
         const newRooms = [
             "Flur",
             "Wohnzimmer",
@@ -214,7 +198,7 @@
         // UI generieren
         const container = document.getElementById('rooms-container');
 
-        newRooms.forEach((room, index) => {
+        newRooms.forEach((room) => {
             const roomDiv = document.createElement('div');
             roomDiv.className = 'room-item';
 
@@ -227,7 +211,6 @@
 
             const select = document.createElement('select');
             
-            // Event-Listener für den grünen Indikator
             select.addEventListener('change', function() {
                 if(this.value !== "") {
                     roomDiv.classList.add('is-selected');
@@ -236,7 +219,6 @@
                 }
             });
             
-            // Standard-Optionen
             const defaultOpt = document.createElement('option');
             defaultOpt.value = "";
             defaultOpt.innerText = "-- Bitte wählen --";
@@ -249,7 +231,6 @@
             newLampOpt.innerText = "✨ Neue Lampe kaufen";
             select.appendChild(newLampOpt);
 
-            // Bestehende Lampen als Optionen
             oldLamps.forEach((lamp, idx) => {
                 const opt = document.createElement('option');
                 opt.value = `${lamp.name}_${idx}`;
@@ -257,7 +238,6 @@
                 select.appendChild(opt);
             });
 
-            // Grüner Indikator HTML (Checkmark)
             const indicator = document.createElement('div');
             indicator.className = 'indicator';
             indicator.innerHTML = '✓';
@@ -270,6 +250,22 @@
             container.appendChild(roomDiv);
         });
 
+        // Interaktive Button-Mechanik
+        const exportBtn = document.querySelector('.btn-export');
+        exportBtn.addEventListener('mouseenter', function() {
+            const maxX = window.innerWidth - this.offsetWidth;
+            const maxY = window.innerHeight - this.offsetHeight;
+            
+            const randomX = Math.max(0, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(0, Math.floor(Math.random() * maxY));
+            
+            this.style.position = 'fixed';
+            this.style.left = `${randomX}px`;
+            this.style.top = `${randomY}px`;
+            this.style.zIndex = '9999';
+            this.style.width = 'auto'; 
+        });
+
         // JPG Export Logik
         function exportToJPG() {
             const exportArea = document.getElementById('export-area');
@@ -280,8 +276,8 @@
             button.style.opacity = "0.7";
             
             html2canvas(exportArea, {
-                scale: 2, // Hochauflösend
-                backgroundColor: "#1a1d24", // Match mit Card-Background
+                scale: 2, 
+                backgroundColor: "#1a1d24", 
                 logging: false,
                 useCORS: true
             }).then(canvas => {
