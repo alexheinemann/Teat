@@ -26,10 +26,10 @@
         .room-label { font-weight: 500; font-size: 0.95rem; text-transform: uppercase; display: block; margin-bottom: 0.5rem; }
         select, input { padding: 0.8rem; border-radius: 6px; background: #000; color: white; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; margin-bottom: 5px; }
         
-        /* Hier wurde die Ausgrauung verstärkt */
-        select option:disabled { 
-            color: #333 !important; 
-            background-color: #050505 !important; 
+        /* Starke visuelle Ausgrauung für ungenutzte Elemente */
+        select option[disabled] { 
+            display: none; 
+            color: #222 !important; 
         }
         
         .input-group { display: none; }
@@ -119,6 +119,7 @@
             const currentVal = select.value;
             Array.from(select.options).forEach(opt => {
                 if (opt.value === "" || opt.value === "NEU") return;
+                // Ausblenden, wenn schon woanders gewählt
                 opt.disabled = selectedValues.includes(opt.value) && opt.value !== currentVal;
             });
         });
