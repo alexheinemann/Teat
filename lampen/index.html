@@ -22,15 +22,20 @@
         .container { width: 100%; max-width: 700px; }
         #ui-area { background-color: var(--card-bg); padding: 3rem 2.5rem; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.15); margin-bottom: 2rem; }
         h1 { font-size: 1.8rem; margin-top: 0; margin-bottom: 2.5rem; text-align: center; color: var(--primary); text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; }
+        
         .room-item { margin-bottom: 1.5rem; display: flex; flex-direction: column; }
         .room-label { font-weight: 500; margin-bottom: 0.6rem; font-size: 0.95rem; color: var(--text-main); text-transform: uppercase; }
-        select { padding: 1rem; border-radius: 8px; background: #0a0a0a; color: white; border: 1px solid var(--border-color); cursor: pointer; }
-        .btn-export { background-color: var(--primary); color: #000; border: none; padding: 1.2rem; font-weight: 700; text-transform: uppercase; border-radius: 8px; cursor: pointer; width: 100%; }
         
+        select { padding: 1rem; border-radius: 8px; background: #0a0a0a; color: white; border: 1px solid var(--border-color); cursor: pointer; width: 100%; }
+        select:disabled { opacity: 0.5; }
+        
+        .btn-export { background-color: var(--primary); color: #000; border: none; padding: 1.2rem; font-weight: 700; text-transform: uppercase; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 1rem; }
+        .btn-export:hover { background-color: var(--primary-hover); }
+
         #print-layout { display: none; width: 800px; background-color: var(--bg-color); padding: 60px; color: var(--text-main); }
         .print-row { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #222; }
         .print-cat { color: var(--primary); font-weight: bold; text-transform: uppercase; }
-        .print-waste { color: #ff4444; font-weight: bold; margin-top: 40px; border-top: 2px solid #ff4444; padding-top: 20px; }
+        .print-waste { color: #ff4444; font-weight: bold; margin-top: 40px; border-top: 2px solid #ff4444; padding-top: 20px; text-transform: uppercase;}
     </style>
 </head>
 <body>
@@ -68,6 +73,8 @@
         ];
 
         const container = document.getElementById('rooms-container');
+
+        // UI Aufbau
         newRooms.forEach(room => {
             const div = document.createElement('div');
             div.className = 'room-item';
@@ -77,6 +84,24 @@
             container.appendChild(div);
         });
 
+        // Dropdown Sperr-Logik
+        const updateDropdowns = () => {
+            const selects = document.querySelectorAll('.lamp-select');
+            const selectedValues = Array.from(selects).map(s => s.value).filter(v => v !== "" && v !== "NEU");
+            
+            selects.forEach(select => {
+                const currentVal = select.value;
+                Array.from(select.options).forEach(opt => {
+                    if (opt.value === "" || opt.value === "NEU") return;
+                    // Deaktivieren, wenn schon gewählt und nicht die aktuell gewählte in diesem Dropdown
+                    opt.disabled = selectedValues.includes(opt.value) && opt.value !== currentVal;
+                });
+            });
+        };
+
+        container.addEventListener('change', updateDropdowns);
+
+        // Export Logik
         document.getElementById('btn-export').addEventListener('click', () => {
             const uiArea = document.getElementById('main-container');
             const printArea = document.getElementById('print-layout');
@@ -87,11 +112,12 @@
                 const row = document.createElement('div');
                 row.className = 'print-row';
                 const roomName = newRooms[i].name + " (" + newRooms[i].sub + ")";
-                const val = sel.value;
-                const text = sel.options[sel.selectedIndex].text;
-
-                if (val && val !== "NEU") usedLampIds.push(val);
-                row.innerHTML = `<span class="print-cat">${roomName}</span><span>${val ? text : "— offen —"}</span>`;
+                
+                if (sel.value && sel.value !== "NEU") usedLampIds.push(sel.value);
+                
+                const selectedText = sel.value === "NEU" ? "✨ Neue Lampe kaufen" : (sel.value ? sel.options[sel.selectedIndex].text : "— offen —");
+                
+                row.innerHTML = `<span class="print-cat">${roomName}</span><span>${selectedText}</span>`;
                 printArea.appendChild(row);
             });
 
