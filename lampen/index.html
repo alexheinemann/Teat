@@ -11,46 +11,28 @@
             --card-bg: #141414;
             --text-main: #eaeaea;
             --primary: #d4af37;
-            --primary-hover: #b5952f;
             --border-color: #2a2a2a;
         }
-
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .container { width: 100%; max-width: 700px; }
-        #ui-area { background-color: var(--card-bg); padding: 3rem 2.5rem; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.15); margin-bottom: 2rem; }
-        
-        h1 { font-size: 1.6rem; margin-top: 0; margin-bottom: 2rem; text-align: center; color: var(--primary); text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 15px; }
-        .logo { font-size: 2.5rem; }
-        
+        #ui-area { background-color: var(--card-bg); padding: 2rem; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.15); }
+        h1 { font-size: 1.5rem; color: var(--primary); text-align: center; margin-bottom: 2rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .room-item { margin-bottom: 1.5rem; }
-        .room-label { font-weight: 500; font-size: 0.95rem; text-transform: uppercase; display: block; margin-bottom: 0.5rem; }
-        select, input { padding: 0.8rem; border-radius: 6px; background: #000; color: white; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; margin-bottom: 5px; }
-        
-        /* Starke visuelle Ausgrauung für ungenutzte Elemente */
-        select option[disabled] { 
-            display: none; 
-            color: #222 !important; 
-        }
-        
-        .input-group { display: none; }
-        .btn-export { background-color: var(--primary); color: #000; border: none; padding: 1.2rem; font-weight: 700; text-transform: uppercase; border-radius: 8px; cursor: pointer; width: 100%; }
-        
-        #print-layout { display: none; width: 800px; background-color: #0a0a0a; padding: 60px; color: #eaeaea; }
-        .print-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #222; }
-        .print-cat { color: var(--primary); font-weight: bold; }
+        .room-label { display: block; font-size: 0.9rem; margin-bottom: 0.4rem; text-transform: uppercase; }
+        select, input { padding: 0.8rem; border-radius: 6px; background: #000; color: white; border: 1px solid var(--border-color); width: 100%; box-sizing: border-box; }
+        .input-group { display: none; margin-top: 5px; }
+        .btn-export { background-color: var(--primary); color: #000; padding: 1rem; font-weight: bold; border: none; border-radius: 6px; width: 100%; cursor: pointer; margin-top: 1rem; }
     </style>
 </head>
 <body>
 
 <div class="container" id="main-container">
     <div id="ui-area">
-        <h1><span class="logo">💡</span> Lampenplanung Blumenstr. 21</h1>
+        <h1><span>💡</span> Lampenplanung Blumenstr. 21</h1>
         <div id="rooms-container"></div>
     </div>
     <button class="btn-export" id="btn-export">💾 Plan als JPG speichern</button>
 </div>
-
-<div id="print-layout"></div>
 
 <script>
     const oldLamps = [
@@ -73,6 +55,30 @@
         { name: "Office Alex", sub: "Spot Holzecke?" }
     ];
 
+    function renderSelect(selectElement, selectedValue, savedWish) {
+        const currentSelected = selectElement.value || selectedValue;
+        const allSelects = document.querySelectorAll('.lamp-select');
+        const taken = Array.from(allSelects)
+            .map(s => s.value)
+            .filter(v => v && v !== "NEU" && v !== currentSelected);
+
+        selectElement.innerHTML = `<option value="">-- Bitte wählen --</option><option value="NEU">✨ Neue Lampe kaufen</option>`;
+        
+        oldLamps.forEach(l => {
+            if (!taken.includes(l.id)) {
+                const opt = document.createElement('option');
+                opt.value = l.id;
+                opt.textContent = `${l.name} (${l.room})`;
+                if (l.id === currentSelected) opt.selected = true;
+                selectElement.appendChild(opt);
+            }
+        });
+        
+        if (currentSelected === "NEU") {
+            selectElement.querySelector('option[value="NEU"]').selected = true;
+        }
+    }
+
     function init() {
         const container = document.getElementById('rooms-container');
         const savedData = JSON.parse(localStorage.getItem('lampPlan')) || {};
@@ -81,85 +87,41 @@
             const div = document.createElement('div');
             div.className = 'room-item';
             div.innerHTML = `<label class="room-label">${room.name} (${room.sub})</label>
-                             <select class="lamp-select" data-index="${index}"><option value="">-- Bitte wählen --</option><option value="NEU">✨ Neue Lampe kaufen</option>
-                             ${oldLamps.map(l => `<option value="${l.id}">${l.name} (aus ${l.room})</option>`).join('')}</select>
+                             <select class="lamp-select" data-index="${index}"></select>
                              <div class="input-group" id="group-${index}"><input type="text" placeholder="Was stellst du dir vor?" class="wish-input" data-index="${index}"></div>`;
             container.appendChild(div);
-            
+
             const sel = div.querySelector('select');
             const inpGroup = div.querySelector('.input-group');
             const inp = div.querySelector('.wish-input');
-
+            
             if (savedData[index]) {
                 sel.value = savedData[index].val;
                 inp.value = savedData[index].wish || "";
-                if (sel.value === "NEU") inpGroup.style.display = "block";
+                inpGroup.style.display = (sel.value === "NEU") ? "block" : "none";
             }
-
-            sel.addEventListener('change', () => {
-                inpGroup.style.display = sel.value === "NEU" ? "block" : "none";
-                updateDropdowns();
-            });
-            inp.addEventListener('input', updateDropdowns);
         });
-        updateDropdowns();
-    }
 
-    function updateDropdowns() {
-        const selects = document.querySelectorAll('.lamp-select');
-        const data = {};
-        const selectedValues = Array.from(selects).map((s, i) => {
-            data[i] = { val: s.value, wish: document.querySelectorAll('.wish-input')[i].value };
-            return s.value;
-        }).filter(v => v !== "" && v !== "NEU");
-        
-        localStorage.setItem('lampPlan', JSON.stringify(data));
-        
-        selects.forEach(select => {
-            const currentVal = select.value;
-            Array.from(select.options).forEach(opt => {
-                if (opt.value === "" || opt.value === "NEU") return;
-                // Ausblenden, wenn schon woanders gewählt
-                opt.disabled = selectedValues.includes(opt.value) && opt.value !== currentVal;
-            });
+        // Initialer Render aller Dropdowns
+        document.querySelectorAll('.lamp-select').forEach((sel, i) => renderSelect(sel, savedData[i]?.val));
+
+        container.addEventListener('change', (e) => {
+            if (e.target.classList.contains('lamp-select')) {
+                const group = e.target.parentElement.querySelector('.input-group');
+                group.style.display = (e.target.value === "NEU") ? "block" : "none";
+                
+                // Alle Dropdowns aktualisieren
+                document.querySelectorAll('.lamp-select').forEach(sel => renderSelect(sel));
+                
+                // Speichern
+                const data = {};
+                document.querySelectorAll('.lamp-select').forEach((s, i) => {
+                    data[i] = { val: s.value, wish: document.querySelectorAll('.wish-input')[i].value };
+                });
+                localStorage.setItem('lampPlan', JSON.stringify(data));
+            }
         });
     }
-
-    document.getElementById('btn-export').addEventListener('click', () => {
-        const uiArea = document.getElementById('main-container');
-        const printArea = document.getElementById('print-layout');
-        printArea.innerHTML = '<h1>💡 Lampenplanung</h1>';
-
-        const usedLampIds = [];
-        document.querySelectorAll('.lamp-select').forEach((sel, i) => {
-            const row = document.createElement('div');
-            row.className = 'print-row';
-            const roomName = newRooms[i].name + " (" + newRooms[i].sub + ")";
-            const wish = document.querySelectorAll('.wish-input')[i].value;
-            const text = sel.value === "NEU" ? `✨ ${wish}` : (sel.value ? sel.options[sel.selectedIndex].text : "— offen —");
-            
-            if (sel.value && sel.value !== "NEU") usedLampIds.push(sel.value);
-            row.innerHTML = `<span class="print-cat">${roomName}</span><span>${text}</span>`;
-            printArea.appendChild(row);
-        });
-
-        const unused = oldLamps.filter(l => !usedLampIds.includes(l.id));
-        if (unused.length > 0) {
-            printArea.innerHTML += `<div class="print-row" style="color:red; margin-top:20px;"><b>WEGWERFEN / VERKAUFEN:</b></div>` + 
-            unused.map(l => `<div class="print-row"><span>${l.name} (${l.room})</span></div>`).join('');
-        }
-
-        uiArea.style.display = 'none';
-        printArea.style.display = 'block';
-        html2canvas(printArea, { scale: 2, backgroundColor: "#0a0a0a" }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = 'Lampenplan_Final.jpg';
-            link.href = canvas.toDataURL('image/jpeg', 0.9);
-            link.click();
-            printArea.style.display = 'none';
-            uiArea.style.display = 'block';
-        });
-    });
 
     window.onload = init;
 </script>
