@@ -110,7 +110,6 @@
             transition: color 0.3s ease;
         }
 
-        /* Der grüne Indikator (Checkmark) bleibt grün wie gewünscht */
         .indicator {
             width: 28px;
             height: 28px;
@@ -181,7 +180,7 @@
     </div>
 
     <script>
-        // Bestand alte Wohnung
+        // Bestand alte Wohnung[cite: 1]
         const oldLamps = [
             { name: "Industrial Lampe", room: "Flur" },
             { name: "Lampe über Esstisch", room: "Wohnzimmer" },
@@ -192,7 +191,7 @@
             { name: "Gitterlampe", room: "Office Alex" }
         ];
 
-        // Überkategorien neue Wohnung
+        // Überkategorien neue Wohnung[cite: 1]
         const newRooms = [
             "Flur",
             "Wohnzimmer",
@@ -261,27 +260,6 @@
             container.appendChild(roomDiv);
         });
 
-        // Interaktive Button-Mechanik - Gibt nach 3 Sprüngen auf
-        const exportBtn = document.querySelector('.btn-export');
-        let jumpCount = 0;
-
-        exportBtn.addEventListener('mouseenter', function() {
-            if (jumpCount >= 3) return; // Stoppt das Ausweichen nach 3 Mal
-            
-            jumpCount++;
-            const maxX = window.innerWidth - this.offsetWidth;
-            const maxY = window.innerHeight - this.offsetHeight;
-            
-            const randomX = Math.max(0, Math.floor(Math.random() * maxX));
-            const randomY = Math.max(0, Math.floor(Math.random() * maxY));
-            
-            this.style.position = 'fixed';
-            this.style.left = `${randomX}px`;
-            this.style.top = `${randomY}px`;
-            this.style.zIndex = '9999';
-            this.style.width = 'auto'; 
-        });
-
         // JPG Export Logik
         function exportToJPG() {
             const exportArea = document.getElementById('export-area');
@@ -304,10 +282,6 @@
                 
                 button.innerText = originalText;
                 button.style.opacity = "1";
-                
-                // Setzt den Button wieder an seine Ursprungsposition zurück
-                button.style.position = 'static';
-                jumpCount = 0; // Reset für den nächsten Spaß
             }).catch(err => {
                 console.error("Fehler: ", err);
                 alert("Export fehlgeschlagen.");
