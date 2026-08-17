@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Art Battle Prompt Generator</title>
+    <title>Bilingual Art Battle Prompt Generator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
@@ -56,7 +56,47 @@
 
         header {
             text-align: center;
-            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .lang-switch {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            gap: 0.25rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 0.25rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 640px) {
+            .lang-switch {
+                position: static;
+                justify-content: center;
+                margin-bottom: 1rem;
+            }
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            color: #ffffff;
+            box-shadow: 0 2px 10px rgba(168, 85, 247, 0.3);
         }
 
         header h1 {
@@ -109,30 +149,6 @@
             box-shadow: 0 12px 30px rgba(236, 72, 153, 0.4);
         }
 
-        .btn-main:active {
-            transform: translateY(0) scale(0.98);
-        }
-
-        .btn-secondary {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            color: var(--text-muted);
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 600;
-            padding: 0.75rem 1.25rem;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .btn-secondary:hover {
-            color: var(--text-main);
-            border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(30, 36, 52, 0.9);
-        }
-
         .slots-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -141,15 +157,11 @@
         }
 
         @media (max-width: 1024px) {
-            .slots-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
+            .slots-grid { grid-template-columns: repeat(3, 1fr); }
         }
 
         @media (max-width: 640px) {
-            .slots-grid {
-                grid-template-columns: 1fr;
-            }
+            .slots-grid { grid-template-columns: 1fr; }
         }
 
         .slot-card {
@@ -165,15 +177,12 @@
             backdrop-filter: blur(12px);
             position: relative;
             overflow: hidden;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .slot-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             height: 3px;
             background: var(--accent-purple);
             opacity: 0.7;
@@ -273,7 +282,6 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            position: relative;
         }
 
         .sentence-header h2 {
@@ -350,23 +358,24 @@
 
     <div class="container">
         <header>
+            <div class="lang-switch">
+                <button class="lang-btn active" id="langDe">DE</button>
+                <button class="lang-btn" id="langEn">EN</button>
+            </div>
             <h1>Art Battle Generator</h1>
-            <p>Inspiriert von Ten Hun's Wheel of Doom — Generiere dein nächstes Motiv</p>
+            <p id="headerSubtitle">Infinite Procedural Art Prompt Engine — Unendliche Kombinationen</p>
         </header>
 
         <div class="controls-top">
             <button class="btn-main" id="spinAllBtn">
-                <span>⚡</span> Alles Drehen
-            </button>
-            <button class="btn-secondary" id="resetPoolBtn">
-                Verbrauchte Begriffe zurücksetzen
+                <span>⚡</span> <span id="spinAllText">Alles Drehen</span>
             </button>
         </div>
 
         <div class="slots-grid">
             <!-- Slot 1 -->
             <div class="slot-card" data-category="1" id="card-1">
-                <div class="category-title">1. Hauptobjekt</div>
+                <div class="category-title" id="cat-1-title">1. Hauptobjekt</div>
                 <div class="slot-display">
                     <div class="slot-value" id="val-1">Bereit zum Drehen</div>
                 </div>
@@ -378,7 +387,7 @@
 
             <!-- Slot 2 -->
             <div class="slot-card" data-category="2" id="card-2">
-                <div class="category-title">2. Outfit / Vibe</div>
+                <div class="category-title" id="cat-2-title">2. Outfit / Styling</div>
                 <div class="slot-display">
                     <div class="slot-value" id="val-2">Bereit zum Drehen</div>
                 </div>
@@ -390,7 +399,7 @@
 
             <!-- Slot 3 -->
             <div class="slot-card" data-category="3" id="card-3">
-                <div class="category-title">3. Setting</div>
+                <div class="category-title" id="cat-3-title">3. Setting / Ort</div>
                 <div class="slot-display">
                     <div class="slot-value" id="val-3">Bereit zum Drehen</div>
                 </div>
@@ -402,7 +411,7 @@
 
             <!-- Slot 4 -->
             <div class="slot-card" data-category="4" id="card-4">
-                <div class="category-title">4. Random Objekt 1</div>
+                <div class="category-title" id="cat-4-title">4. Random Objekt 1</div>
                 <div class="slot-display">
                     <div class="slot-value" id="val-4">Bereit zum Drehen</div>
                 </div>
@@ -414,7 +423,7 @@
 
             <!-- Slot 5 -->
             <div class="slot-card" data-category="5" id="card-5">
-                <div class="category-title">5. Random Objekt 2</div>
+                <div class="category-title" id="cat-5-title">5. Random Objekt 2</div>
                 <div class="slot-display">
                     <div class="slot-value" id="val-5">Bereit zum Drehen</div>
                 </div>
@@ -427,62 +436,170 @@
 
         <div class="sentence-card">
             <div class="sentence-header">
-                <h2>Deine Motiv-Challenge (Klarsatz)</h2>
+                <h2 id="sentenceHeader">Deine Motiv-Challenge (Klarsatz)</h2>
             </div>
             <div class="sentence-content" id="sentenceDisplay">
                 Klicke auf "Alles Drehen", um deine erste Motiv-Kombination zu generieren!
             </div>
             <button class="btn-copy" id="copyBtn">
-                📋 Klarsatz kopieren
+                📋 <span id="copyBtnText">Klarsatz kopieren</span>
             </button>
         </div>
     </div>
 
-    <div class="toast" id="toast">Klarsatz in die Zwischenablage kopiert!</div>
+    <div class="toast" id="toast">Kopiert!</div>
 
     <script>
-        const pools = {
-            1: [
-                "ein Axolotl", "ein Wasserschwein (Capybara)", "ein Tannenzapfentier (Pangolin)", "ein Sekretär-Vogel", 
-                "ein Fangschreckenkrebs", "ein Rabe", "ein Chamäleon", "ein Narwal", "ein Roter Panda", "ein Kasuar",
-                "ein Hammerhai", "ein Bär", "ein Oktopus", "ein Flamingo", "ein Wombat", "ein Schnabeltier",
-                "ein Gepard", "eine Schleiereule", "ein Tukan", "ein Hirsch", "ein Komodowaran", "ein Seepferdchen",
-                "ein Cyber-Mönch", "ein Astronaut", "ein Viktorianischer Detektiv", "ein Samurai", "ein Raumanzug-Mechaniker",
-                "ein Zeitreisender", "ein Streetart-Künstler", "ein Alchemist", "ein Post-Apokalyptischer Nomad"
-            ],
-            2: [
-                "in einem knalligen Neon-Windbreaker", "in einer schweren Steampunk-Rüstung", "im maßgeschneiderten Eleganz-Anzug",
-                "in reflektierender Cyberpunk-Streetwear", "in einem königlichen Samtumhang", "in einem abgespaceten Astronautenanzug",
-                "in einem übergroßen Vintage-Hoodie", "in einer filigranen Ritterrüstung", "im traditionellen Seiden-Kimono",
-                "im verblichenen gelben Ostfriesennerz", "in Lederkluft mit Nietengürtel", "in einem bunten Graffiti-Overalls"
-            ],
-            3: [
-                "in einem überwucherten alten Tempel", "in einer verregneten Tokioter Neon-Gasse", "auf einer schwebenden Himmelsinsel",
-                "in einer versunkenen Unterwasser-Ruine", "auf einem postapokalyptischen Schrottplatz", "in einer gemütlichen Neon-Ramen-Bar",
-                "in einem gewaltigen Gewächshaus", "in einer Retro-Video-Arcade-Halle", "in einer alpinen Sternwarte",
-                "in einer Traumwelt aus riesigen Pilzen", "auf dem Dach eines Wolkenkratzers", "in einer verlassenen U-Bahn-Station"
-            ],
-            4: [
-                "eine Riesenschere", "ein altes Grammophon", "ein roter US-Hydrant", "ein leuchtender Riesenpilz",
-                "ein traditionelles Katana", "ein massiver Amboss", "ein orangefarbener Verkehrsleitkegel", "eine antik anmutende Sanduhr",
-                "ein Wählscheibentelefon", "ein Skateboard mit Leuchtrollen", "ein Siebträger-Espressokocher", "ein nostalgischer Walkman"
-            ],
-            5: [
-                "ein Miniatur-Wolkenkratzer", "eine magische Kristallkugel", "ein flackerndes Neonschild", "eine massive Boombox",
-                "eine dampfende Porzellan-Teekanne", "ein Messing-Teleskop", "eine leuchtende Kettensäge", "ein voller Kaugummi-Automat",
-                "ein rostiger Schiffsanker", "ein bunter Heißluftballon", "ein Zauberwürfel", "eine alte Kassette"
-            ]
+        const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+        let currentLang = 'de';
+
+        const i18n = {
+            de: {
+                subtitle: "Infinite Procedural Art Prompt Engine — Unendliche Kombinationen",
+                spinAll: "Alles Drehen",
+                sentenceHeader: "Deine Motiv-Challenge (Klarsatz)",
+                sentenceInitial: "Klicke auf \"Alles Drehen\", um deine erste Motiv-Kombination zu generieren!",
+                copyBtn: "Klarsatz kopieren",
+                toastCopy: "Klarsatz in die Zwischenablage kopiert!",
+                categories: [
+                    "1. Hauptobjekt", "2. Outfit / Styling", "3. Setting / Ort", "4. Random Objekt 1", "5. Random Objekt 2"
+                ],
+                ready: "Bereit zum Drehen"
+            },
+            en: {
+                subtitle: "Infinite Procedural Art Prompt Engine — Endless Combinations",
+                spinAll: "Spin All",
+                sentenceHeader: "Your Art Prompt (Full Sentence)",
+                sentenceInitial: "Click \"Spin All\" to generate your first art battle prompt combination!",
+                copyBtn: "Copy Prompt",
+                toastCopy: "Prompt copied to clipboard!",
+                categories: [
+                    "1. Main Subject", "2. Outfit / Styling", "3. Setting / Environment", "4. Random Object 1", "5. Random Object 2"
+                ],
+                ready: "Ready to Spin"
+            }
         };
 
-        const rawValues = { 1: "", 2: "", 3: "", 4: "", 5: "" };
-        const usedItems = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+        const Generators = {
+            1: function generateHauptobjekt(lang) {
+                const isAnimal = Math.random() < 0.65;
+                if (lang === 'de') {
+                    if (isAnimal) {
+                        const prefixes = ["ein", "ein riesiger", "ein winziger", "ein leuchtender", "ein gepanzerter", "ein mechanischer", "ein flauschiger", "ein mystischer", "ein mutierter", "ein kristalliner"];
+                        const animals = ["Axolotl", "Capybara", "Pangolin", "Sekretär-Vogel", "Fangschreckenkrebs", "Rabe", "Chamäleon", "Narwal", "Roter Panda", "Kasuar", "Hammerhai", "Eulenbär", "Tiefsee-Oktopus", "Flamingo", "Wombat", "Schnabeltier", "Gepard", "Tukan", "Komodowaran", "Kugelfisch", "Pinguin", "Skorpion", "Manta-Rochen", "Seepferdchen", "Gürteltier"];
+                        return `${pick(prefixes)} ${pick(animals)}`;
+                    } else {
+                        const types = ["Cyber-Mönch", "Astronaut", "Viktorianischer Detektiv", "Samurai", "Raumanzug-Mechaniker", "Zeitreisender", "Streetart-Künstler", "Alchemist", "Post-Apokalyptischer Nomad", "Tiefsee-Taucher", "Schatten-Ninja", "Steampunk-Pilot"];
+                        return `ein ${pick(types)}`;
+                    }
+                } else {
+                    if (isAnimal) {
+                        const prefixes = ["a", "a giant", "a tiny", "a glowing", "an armored", "a mechanical", "a fluffy", "a mystical", "a mutated", "a crystalline"];
+                        const animals = ["Axolotl", "Capybara", "Pangolin", "Secretary Bird", "Mantis Shrimp", "Raven", "Chameleon", "Narwhal", "Red Panda", "Cassowary", "Hammerhead Shark", "Owlbear", "Deep-Sea Octopus", "Flamingo", "Wombat", "Platypus", "Cheetah", "Toucan", "Komodo Dragon", "Pufferfish", "Manta Ray", "Seahorse", "Armadillo"];
+                        return `${pick(prefixes)} ${pick(animals)}`;
+                    } else {
+                        const types = ["Cyber Monk", "Astronaut", "Victorian Detective", "Samurai", "Spacesuit Mechanic", "Time Traveler", "Street Artist", "Alchemist", "Post-Apocalyptic Nomad", "Deep-Sea Diver", "Shadow Ninja", "Steampunk Pilot"];
+                        return `a ${pick(types)}`;
+                    }
+                }
+            },
+
+            2: function generateOutfit(lang) {
+                if (lang === 'de') {
+                    const materials = ["Neon-", "Steampunk-", "Ritter-", "Cyberpunk-", "Vintage-", "Holografischer ", "Leder-", "Samt-", "Kristall-", "Denim-", "Gold-"];
+                    const items = ["Windbreaker", "Rüstung", "Maßanzug", "Streetwear-Outfit", "Umhang", "Raumanzug", "Hoodie", "Kimono", "Overall", "Frack", "Parka"];
+                    const adjectives = ["in knackigem", "in schwerer", "in elegantem", "in reflektierender", "in königlicher", "in abgewetztem", "in übergroßem", "in traditioneller", "in greller"];
+                    return `${pick(adjectives)} ${pick(materials)}${pick(items)}`;
+                } else {
+                    const materials = ["Neon", "Steampunk", "Knight's", "Cyberpunk", "Vintage", "Holographic", "Leather", "Velvet", "Crystalline", "Denim", "Golden"];
+                    const items = ["Windbreaker", "Armor", "Tailored Suit", "Streetwear Outfit", "Cape", "Spacesuit", "Hoodie", "Kimono", "Overalls", "Tuxedo", "Parka"];
+                    const preps = ["wearing a", "dressed in a", "sporting a", "clad in a"];
+                    return `${pick(preps)} ${pick(materials)} ${pick(items)}`;
+                }
+            },
+
+            3: function generateSetting(lang) {
+                if (lang === 'de') {
+                    const prep = pick(["in einem", "in einer", "auf einem", "auf einer", "mitten in"]);
+                    const adj = pick(["überwucherten", "verregneten", "schwebenden", "versunkenen", "postapokalyptischen", "gemütlichen", "riesigen", "nostalgischen", "verlassenen", "neonbeleuchteten"]);
+                    const places = ["Altbau-Ruine", "Neon-Gasse", "Himmelsinsel", "Unterwasser-Stadt", "Schrottplatz", "Ramen-Bar", "Gewächshaus", "Video-Arcade", "Sternwarte", "Pilzwald-Traumwelt", "Wolkenkratzer-Dach"];
+                    return `${prep} ${adj} ${pick(places)}`;
+                } else {
+                    const prep = pick(["in an", "in a", "on a", "inside a", "deep within a"]);
+                    const adj = pick(["overgrown", "rain-slicked", "floating", "sunken", "post-apocalyptic", "cozy", "gargantuan", "nostalgic", "abandoned", "neon-lit"]);
+                    const places = ["ancient ruin", "Tokyo alleyway", "sky island", "underwater city", "junkyard", "ramen bar", "greenhouse", "retro arcade", "alpine observatory", "mushroom forest", "skyscraper rooftop"];
+                    return `${prep} ${adj} ${pick(places)}`;
+                }
+            },
+
+            4: function generateObject1(lang) {
+                if (lang === 'de') {
+                    const size = pick(["eine riesige", "eine winzige", "eine leuchtende", "eine alte", "eine mechanische", "eine schwebende", "eine goldene", "eine verrostete", "eine neonfarbene"]);
+                    const items = ["Schere", "Grammophon-Tuba", "US-Parkuhr", "Kristall-Gitarre", "Kettensäge", "Kaffeemühle", "Sanduhr", "Wählscheiben-Taschenuhr", "Skateboard-Deck", "Kuckucksuhr"];
+                    return `${size} ${pick(items)}`;
+                } else {
+                    const size = pick(["a giant", "a tiny", "a glowing", "an ancient", "a mechanical", "a floating", "a golden", "a rusty", "a neon-colored"]);
+                    const items = ["pair of scissors", "gramophone horn", "parking meter", "crystal guitar", "chainsaw", "coffee grinder", "hourglass", "rotary pocket watch", "skateboard deck", "cuckoo clock"];
+                    return `${size} ${pick(items)}`;
+                }
+            },
+
+            5: function generateObject2(lang) {
+                if (lang === 'de') {
+                    const size = pick(["ein schwebender", "ein funkelndes", "ein gigantischer", "ein altertümlicher", "ein gläserner", "ein dampfender", "ein verchromter", "ein antiker", "ein farbenfroher"]);
+                    const items = ["Wolkenkratzer-Modell", "Neonschild", "Ghetto-Blaster", "Teekessel", "Teleskop", "Kaugummi-Automat", "Schiffsanker", "Heißluftballon", "Zauberwürfel", "Videokassetten-Stapel"];
+                    return `${size} ${pick(items)}`;
+                } else {
+                    const size = pick(["a floating", "a sparkling", "a gigantic", "an antique", "a glass", "a steaming", "a chromed", "a colorful", "a mysterious"]);
+                    const items = ["skyscraper model", "neon sign", "boombox", "tea kettle", "telescope", "gumball machine", "ship anchor", "hot air balloon", "Magic Cube", "stack of VHS tapes"];
+                    return `${size} ${pick(items)}`;
+                }
+            }
+        };
+
+        const rawBilingualValues = {
+            1: { de: "", en: "" },
+            2: { de: "", en: "" },
+            3: { de: "", en: "" },
+            4: { de: "", en: "" },
+            5: { de: "", en: "" }
+        };
+
         const lockedSlots = { 1: false, 2: false, 3: false, 4: false, 5: false };
 
+        const langDeBtn = document.getElementById('langDe');
+        const langEnBtn = document.getElementById('langEn');
         const spinAllBtn = document.getElementById('spinAllBtn');
-        const resetPoolBtn = document.getElementById('resetPoolBtn');
         const copyBtn = document.getElementById('copyBtn');
         const sentenceDisplay = document.getElementById('sentenceDisplay');
         const toast = document.getElementById('toast');
+
+        langDeBtn.addEventListener('click', () => switchLanguage('de'));
+        langEnBtn.addEventListener('click', () => switchLanguage('en'));
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            langDeBtn.classList.toggle('active', lang === 'de');
+            langEnBtn.classList.toggle('active', lang === 'en');
+
+            document.getElementById('headerSubtitle').innerText = i18n[lang].subtitle;
+            document.getElementById('spinAllText').innerText = i18n[lang].spinAll;
+            document.getElementById('sentenceHeader').innerText = i18n[lang].sentenceHeader;
+            document.getElementById('copyBtnText').innerText = i18n[lang].copyBtn;
+
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`cat-${i}-title`).innerText = i18n[lang].categories[i - 1];
+                const valEl = document.getElementById(`val-${i}`);
+                if (rawBilingualValues[i][lang]) {
+                    valEl.innerText = rawBilingualValues[i][lang];
+                } else if (valEl.innerText.includes("Bereit") || valEl.innerText.includes("Ready")) {
+                    valEl.innerText = i18n[lang].ready;
+                }
+            }
+
+            updateSentence();
+        }
 
         document.querySelectorAll('.lock-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -508,28 +625,11 @@
             }
         });
 
-        resetPoolBtn.addEventListener('click', () => {
-            for (let i = 1; i <= 5; i++) { usedItems[i] = []; }
-            showToast("Alle verbrauchten Begriffe wurden zurückgesetzt!");
-        });
-
         copyBtn.addEventListener('click', () => {
             navigator.clipboard.writeText(sentenceDisplay.innerText).then(() => {
-                showToast("Klarsatz in die Zwischenablage kopiert!");
+                showToast(i18n[currentLang].toastCopy);
             });
         });
-
-        function getRandomItem(col) {
-            let pool = pools[col];
-            let available = pool.filter(item => !usedItems[col].includes(item));
-            if (available.length === 0) {
-                usedItems[col] = [];
-                available = pool;
-            }
-            const chosen = available[Math.floor(Math.random() * available.length)];
-            usedItems[col].push(chosen);
-            return chosen;
-        }
 
         function spinSingleColumn(col) {
             const valEl = document.getElementById(`val-${col}`);
@@ -537,13 +637,17 @@
 
             let counter = 0;
             const interval = setInterval(() => {
-                valEl.innerText = pools[col][Math.floor(Math.random() * pools[col].length)];
+                valEl.innerText = Generators[col](currentLang);
                 counter++;
                 if (counter >= 10) {
                     clearInterval(interval);
-                    const finalVal = getRandomItem(col);
-                    rawValues[col] = finalVal;
-                    valEl.innerText = finalVal;
+                    
+                    const deVal = Generators[col]('de');
+                    const enVal = Generators[col]('en');
+                    
+                    rawBilingualValues[col] = { de: deVal, en: enVal };
+
+                    valEl.innerText = rawBilingualValues[col][currentLang];
                     valEl.classList.remove('spinning');
                     updateSentence();
                 }
@@ -551,15 +655,35 @@
         }
 
         function updateSentence() {
-            if (!rawValues[1] || !rawValues[2] || !rawValues[3] || !rawValues[4] || !rawValues[5]) return;
+            const l = currentLang;
+            if (!rawBilingualValues[1][l] || !rawBilingualValues[2][l] || !rawBilingualValues[3][l] || !rawBilingualValues[4][l] || !rawBilingualValues[5][l]) {
+                sentenceDisplay.innerText = i18n[l].sentenceInitial;
+                return;
+            }
 
-            sentenceDisplay.innerHTML = `
-                <span class="highlight hl-1">${rawValues[1]}</span> 
-                <span class="highlight hl-2">${rawValues[2]}</span> 
-                <span class="highlight hl-3">${rawValues[3]}</span>, 
-                kombiniert mit <span class="highlight hl-4">${rawValues[4]}</span> 
-                und <span class="highlight hl-5">${rawValues[5]}</span>.
-            `;
+            const val1 = rawBilingualValues[1][l];
+            const val2 = rawBilingualValues[2][l];
+            const val3 = rawBilingualValues[3][l];
+            const val4 = rawBilingualValues[4][l];
+            const val5 = rawBilingualValues[5][l];
+
+            if (l === 'de') {
+                sentenceDisplay.innerHTML = `
+                    <span class="highlight hl-1">${val1}</span> 
+                    <span class="highlight hl-2">${val2}</span> 
+                    <span class="highlight hl-3">${val3}</span>, 
+                    kombiniert mit <span class="highlight hl-4">${val4}</span> 
+                    und <span class="highlight hl-5">${val5}</span>.
+                `;
+            } else {
+                sentenceDisplay.innerHTML = `
+                    <span class="highlight hl-1">${val1}</span> 
+                    <span class="highlight hl-2">${val2}</span> 
+                    <span class="highlight hl-3">${val3}</span>, 
+                    combined with <span class="highlight hl-4">${val4}</span> 
+                    and <span class="highlight hl-5">${val5}</span>.
+                `;
+            }
         }
 
         function showToast(msg) {
