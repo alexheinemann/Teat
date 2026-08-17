@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Battle Prompt Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d0f17;
+            --card-bg: rgba(22, 26, 38, 0.85);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-purple: #a855f7;
+            --accent-pink: #ec4899;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-yellow: #eab308;
+            --accent-green: #10b981;
+            --glow-color: rgba(168, 85, 247, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(168, 85, 247, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.05) 0%, transparent 60%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .controls-top {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px var(--glow-color);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-main:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(236, 72, 153, 0.4);
+        }
+
+        .btn-main:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .btn-secondary {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            color: var(--text-main);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(30, 36, 52, 0.9);
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .slots-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .slots-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .slot-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.25rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 220px;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .slot-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-purple);
+            opacity: 0.7;
+        }
+
+        .slot-card[data-category="1"]::before { background: var(--accent-purple); }
+        .slot-card[data-category="2"]::before { background: var(--accent-pink); }
+        .slot-card[data-category="3"]::before { background: var(--accent-blue); }
+        .slot-card[data-category="4"]::before { background: var(--accent-cyan); }
+        .slot-card[data-category="5"]::before { background: var(--accent-yellow); }
+
+        .slot-card.locked {
+            border-color: rgba(234, 179, 8, 0.4);
+            box-shadow: inset 0 0 15px rgba(234, 179, 8, 0.08);
+        }
+
+        .slot-card.locked::before {
+            background: var(--accent-yellow) !important;
+            opacity: 1;
+        }
+
+        .category-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .slot-display {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            text-align: center;
+            padding: 0.5rem 0;
+        }
+
+        .slot-value {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.35;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+
+        .slot-value.spinning {
+            opacity: 0.3;
+            transform: scale(0.95);
+            filter: blur(2px);
+        }
+
+        .slot-actions {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .btn-icon {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            border-radius: 10px;
+            padding: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        .btn-icon.active-lock {
+            background: rgba(234, 179, 8, 0.15);
+            color: var(--accent-yellow);
+            border-color: rgba(234, 179, 8, 0.4);
+        }
+
+        .sentence-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .sentence-header h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .sentence-content {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .highlight {
+            padding: 0.15em 0.4em;
+            border-radius: 6px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .hl-1 { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+        .hl-2 { background: rgba(236, 72, 153, 0.2); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); }
+        .hl-3 { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .hl-4 { background: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
+        .hl-5 { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3); }
+
+        .btn-copy {
+            align-self: flex-end;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-main);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 0.6rem 1.25rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-copy:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--accent-green);
+            color: #000;
+            font-weight: 700;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Art Battle Generator</h1>
+            <p>Inspiriert von Ten Hun's Wheel of Doom — Generiere dein nächstes Motiv</p>
+        </header>
+
+        <div class="controls-top">
+            <button class="btn-main" id="spinAllBtn">
+                <span>⚡</span> Alles Drehen
+            </button>
+            <button class="btn-secondary" id="resetPoolBtn">
+                Verbrauchte Begriffe zurücksetzen
+            </button>
+        </div>
+
+        <div class="slots-grid">
+            <!-- Slot 1 -->
+            <div class="slot-card" data-category="1" id="card-1">
+                <div class="category-title">1. Hauptobjekt</div>
+                <div class="slot-display">
+                    <div class="slot-value" id="val-1">Bereit zum Drehen</div>
+                </div>
+                <div class="slot-actions">
+                    <button class="btn-icon spin-single" data-col="1" title="Einzeln drehen">🔄</button>
+                    <button class="btn-icon lock-btn" data-col="1" title="Sperren">🔒</button>
+                </div>
+            </div>
+
+            <!-- Slot 2 -->
+            <div class="slot-card" data-category="2" id="card-2">
+                <div class="category-title">2. Outfit / Vibe</div>
+                <div class="slot-display">
+                    <div class="slot-value" id="val-2">Bereit zum Drehen</div>
+                </div>
+                <div class="slot-actions">
+                    <button class="btn-icon spin-single" data-col="2" title="Einzeln drehen">🔄</button>
+                    <button class="btn-icon lock-btn" data-col="2" title="Sperren">🔒</button>
+                </div>
+            </div>
+
+            <!-- Slot 3 -->
+            <div class="slot-card" data-category="3" id="card-3">
+                <div class="category-title">3. Setting</div>
+                <div class="slot-display">
+                    <div class="slot-value" id="val-3">Bereit zum Drehen</div>
+                </div>
+                <div class="slot-actions">
+                    <button class="btn-icon spin-single" data-col="3" title="Einzeln drehen">🔄</button>
+                    <button class="btn-icon lock-btn" data-col="3" title="Sperren">🔒</button>
+                </div>
+            </div>
+
+            <!-- Slot 4 -->
+            <div class="slot-card" data-category="4" id="card-4">
+                <div class="category-title">4. Random Objekt 1</div>
+                <div class="slot-display">
+                    <div class="slot-value" id="val-4">Bereit zum Drehen</div>
+                </div>
+                <div class="slot-actions">
+                    <button class="btn-icon spin-single" data-col="4" title="Einzeln drehen">🔄</button>
+                    <button class="btn-icon lock-btn" data-col="4" title="Sperren">🔒</button>
+                </div>
+            </div>
+
+            <!-- Slot 5 -->
+            <div class="slot-card" data-category="5" id="card-5">
+                <div class="category-title">5. Random Objekt 2</div>
+                <div class="slot-display">
+                    <div class="slot-value" id="val-5">Bereit zum Drehen</div>
+                </div>
+                <div class="slot-actions">
+                    <button class="btn-icon spin-single" data-col="5" title="Einzeln drehen">🔄</button>
+                    <button class="btn-icon lock-btn" data-col="5" title="Sperren">🔒</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="sentence-card">
+            <div class="sentence-header">
+                <h2>Deine Motiv-Challenge (Klarsatz)</h2>
+            </div>
+            <div class="sentence-content" id="sentenceDisplay">
+                Klicke auf "Alles Drehen", um deine erste Motiv-Kombination zu generieren!
+            </div>
+            <button class="btn-copy" id="copyBtn">
+                📋 Klarsatz kopieren
+            </button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Klarsatz in die Zwischenablage kopiert!</div>
+
+    <script>
+        const pools = {
+            1: [
+                "ein Axolotl", "ein Wasserschwein (Capybara)", "ein Tannenzapfentier (Pangolin)", "ein Sekretär-Vogel", 
+                "ein Fangschreckenkrebs", "ein Rabe", "ein Chamäleon", "ein Narwal", "ein Roter Panda", "ein Kasuar",
+                "ein Hammerhai", "ein Bär", "ein Oktopus", "ein Flamingo", "ein Wombat", "ein Schnabeltier",
+                "ein Gepard", "eine Schleiereule", "ein Tukan", "ein Hirsch", "ein Komodowaran", "ein Seepferdchen",
+                "ein Cyber-Mönch", "ein Astronaut", "ein Viktorianischer Detektiv", "ein Samurai", "ein Raumanzug-Mechaniker",
+                "ein Zeitreisender", "ein Streetart-Künstler", "ein Alchemist", "ein Post-Apokalyptischer Nomad"
+            ],
+            2: [
+                "in einem knalligen Neon-Windbreaker", "in einer schweren Steampunk-Rüstung", "im maßgeschneiderten Eleganz-Anzug",
+                "in reflektierender Cyberpunk-Streetwear", "in einem königlichen Samtumhang", "in einem abgespaceten Astronautenanzug",
+                "in einem übergroßen Vintage-Hoodie", "in einer filigranen Ritterrüstung", "im traditionellen Seiden-Kimono",
+                "im verblichenen gelben Ostfriesennerz", "in Lederkluft mit Nietengürtel", "in einem bunten Graffiti-Overalls"
+            ],
+            3: [
+                "in einem überwucherten alten Tempel", "in einer verregneten Tokioter Neon-Gasse", "auf einer schwebenden Himmelsinsel",
+                "in einer versunkenen Unterwasser-Ruine", "auf einem postapokalyptischen Schrottplatz", "in einer gemütlichen Neon-Ramen-Bar",
+                "in einem gewaltigen Gewächshaus", "in einer Retro-Video-Arcade-Halle", "in einer alpinen Sternwarte",
+                "in einer Traumwelt aus riesigen Pilzen", "auf dem Dach eines Wolkenkratzers", "in einer verlassenen U-Bahn-Station"
+            ],
+            4: [
+                "eine Riesenschere", "ein altes Grammophon", "ein roter US-Hydrant", "ein leuchtender Riesenpilz",
+                "ein traditionelles Katana", "ein massiver Amboss", "ein orangefarbener Verkehrsleitkegel", "eine antik anmutende Sanduhr",
+                "ein Wählscheibentelefon", "ein Skateboard mit Leuchtrollen", "ein Siebträger-Espressokocher", "ein nostalgischer Walkman"
+            ],
+            5: [
+                "ein Miniatur-Wolkenkratzer", "eine magische Kristallkugel", "ein flackerndes Neonschild", "eine massive Boombox",
+                "eine dampfende Porzellan-Teekanne", "ein Messing-Teleskop", "eine leuchtende Kettensäge", "ein voller Kaugummi-Automat",
+                "ein rostiger Schiffsanker", "ein bunter Heißluftballon", "ein Zauberwürfel", "eine alte Kassette"
+            ]
+        };
+
+        const rawValues = { 1: "", 2: "", 3: "", 4: "", 5: "" };
+        const usedItems = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+        const lockedSlots = { 1: false, 2: false, 3: false, 4: false, 5: false };
+
+        const spinAllBtn = document.getElementById('spinAllBtn');
+        const resetPoolBtn = document.getElementById('resetPoolBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const sentenceDisplay = document.getElementById('sentenceDisplay');
+        const toast = document.getElementById('toast');
+
+        document.querySelectorAll('.lock-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const col = e.currentTarget.dataset.col;
+                lockedSlots[col] = !lockedSlots[col];
+                e.currentTarget.classList.toggle('active-lock', lockedSlots[col]);
+                document.getElementById(`card-${col}`).classList.toggle('locked', lockedSlots[col]);
+            });
+        });
+
+        document.querySelectorAll('.spin-single').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const col = e.currentTarget.dataset.col;
+                spinSingleColumn(col);
+            });
+        });
+
+        spinAllBtn.addEventListener('click', () => {
+            for (let col = 1; col <= 5; col++) {
+                if (!lockedSlots[col]) {
+                    spinSingleColumn(col);
+                }
+            }
+        });
+
+        resetPoolBtn.addEventListener('click', () => {
+            for (let i = 1; i <= 5; i++) { usedItems[i] = []; }
+            showToast("Alle verbrauchten Begriffe wurden zurückgesetzt!");
+        });
+
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(sentenceDisplay.innerText).then(() => {
+                showToast("Klarsatz in die Zwischenablage kopiert!");
+            });
+        });
+
+        function getRandomItem(col) {
+            let pool = pools[col];
+            let available = pool.filter(item => !usedItems[col].includes(item));
+            if (available.length === 0) {
+                usedItems[col] = [];
+                available = pool;
+            }
+            const chosen = available[Math.floor(Math.random() * available.length)];
+            usedItems[col].push(chosen);
+            return chosen;
+        }
+
+        function spinSingleColumn(col) {
+            const valEl = document.getElementById(`val-${col}`);
+            valEl.classList.add('spinning');
+
+            let counter = 0;
+            const interval = setInterval(() => {
+                valEl.innerText = pools[col][Math.floor(Math.random() * pools[col].length)];
+                counter++;
+                if (counter >= 10) {
+                    clearInterval(interval);
+                    const finalVal = getRandomItem(col);
+                    rawValues[col] = finalVal;
+                    valEl.innerText = finalVal;
+                    valEl.classList.remove('spinning');
+                    updateSentence();
+                }
+            }, 50);
+        }
+
+        function updateSentence() {
+            if (!rawValues[1] || !rawValues[2] || !rawValues[3] || !rawValues[4] || !rawValues[5]) return;
+
+            sentenceDisplay.innerHTML = `
+                <span class="highlight hl-1">${rawValues[1]}</span> 
+                <span class="highlight hl-2">${rawValues[2]}</span> 
+                <span class="highlight hl-3">${rawValues[3]}</span>, 
+                kombiniert mit <span class="highlight hl-4">${rawValues[4]}</span> 
+                und <span class="highlight hl-5">${rawValues[5]}</span>.
+            `;
+        }
+
+        function showToast(msg) {
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2500);
+        }
+    </script>
+</body>
+</html>
